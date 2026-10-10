@@ -1,0 +1,17 @@
+export const quotes = [
+  { id: 'q-tonight', order: 1, text: 'Tonight’s the night. And it’s going to happen again and again. It has to happen.', by: 'dexter', series: 'dexter', season: 1, episode: 1, tags: ['monologue', 'iconic'] },
+  { id: 'q-neat-monster', order: 2, text: 'Harry was a great cop here in Miami. He taught me how to think like one. He taught me how to cover my tracks. I’m a very neat monster.', by: 'dexter', series: 'dexter', season: 1, episode: 1, tags: ['monologue', 'iconic', 'harry'] },
+  { id: 'q-blood', order: 3, text: 'Blood. Sometimes it sets my teeth on edge. Other times it helps me control the chaos.', by: 'dexter', series: 'dexter', season: 1, episode: 1, tags: ['monologue', 'blood'] },
+  { id: 'q-name', order: 4, text: 'My name is Dexter. Dexter Morgan.', by: 'dexter', series: 'dexter', season: 1, tags: ['iconic'] },
+  { id: 'q-passenger', order: 5, text: 'I just know there’s something dark in me, and I hide it. I certainly don’t talk about it, but it’s there. Always. This Dark Passenger.', by: 'dexter', series: 'dexter', season: 1, tags: ['monologue', 'dark passenger'] },
+  { id: 'q-fake', order: 6, text: 'People fake a lot of human interactions, but I feel like I fake them all. And I fake them very well. That’s my burden, I guess.', by: 'dexter', series: 'dexter', season: 1, tags: ['monologue'] },
+  { id: 'q-halloween', order: 7, text: 'Halloween. The one night a year when everyone wears a mask. Not just me.', by: 'dexter', series: 'dexter', season: 1, episode: 4, tags: ['monologue'] },
+  { id: 'q-surprise', order: 8, text: 'Surprise, motherfucker.', by: 'doakes', series: 'dexter', season: 1, tags: ['iconic', 'doakes'] },
+  { id: 'q-creation', order: 9, text: 'It’s strange to have a creation out there. A deeply mutated version of yourself, running loose and screwing everything up.', by: 'dexter', series: 'dexter', season: 2, episode: 12, tags: ['monologue', 'lila'] },
+  { id: 'q-hello', order: 10, text: 'Hello, Dexter Morgan.', by: 'trinity', series: 'dexter', season: 4, episode: 11, tags: ['iconic', 'trinity'] },
+  { id: 'q-connect', order: 11, text: 'They make it look so easy, connecting with another human being.', by: 'dexter', series: 'dexter', season: 5, episode: 12, tags: ['monologue'] },
+  { id: 'q-both-sides', order: 12, text: 'She accepts both sides of me. The whole Dexter.', by: 'dexter', series: 'dexter', season: 7, tags: ['monologue', 'hannah'] },
+  { id: 'q-code-caught', order: 13, text: 'Don’t get caught.', by: 'harry', series: 'dexter', season: 1, tags: ['code', 'harry'] },
+  { id: 'q-code-sure', order: 14, text: 'Be sure. You have to be sure.', by: 'harry', series: 'dexter', season: 1, tags: ['code', 'harry'] },
+  { id: 'q-code-innocent', order: 15, text: 'Never kill an innocent.', by: 'harry', series: 'dexter', season: 1, tags: ['code', 'harry'] },
+];

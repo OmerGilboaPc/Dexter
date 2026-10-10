@@ -1,0 +1,80 @@
+rules_version = '2';
+
+// Firestore security rules for the Dexter site.
+// Paste into: Firebase Console → Firestore Database → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function verified() {
+      return signedIn() && request.auth.token.email_verified == true;
+    }
+    function isAdmin() {
+      return verified() && request.auth.token.email == 'omergilboapc@gmail.com';
+    }
+    function notBlocked() {
+      return !exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('blocked', false) != true;
+    }
+    function isContent(col) {
+      return col in ['series', 'seasons', 'characters', 'villains', 'victims', 'quotes', 'timeline',
+                     'locations', 'code', 'bts', 'trivia', 'quiz', 'cases', 'achievements', 'eggs',
+                     'pages', 'media'];
+    }
+
+    // Global settings & UI texts: public read (the sign-in page needs them), admin write.
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // CMS content: signed-in users read, only the admin writes.
+    match /{col}/{docId} {
+      allow read: if isContent(col) && verified();
+      allow write: if isContent(col) && isAdmin();
+    }
+
+    // Change history (undo) — admin only.
+    match /history/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // User profiles.
+    match /users/{uid} {
+      allow read: if (signedIn() && request.auth.uid == uid) || verified();
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.get('blocked', false) == false;
+      allow update: if isAdmin()
+        || (signedIn() && request.auth.uid == uid
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blocked']));
+      allow delete: if isAdmin();
+    }
+
+    // Game scores (leaderboard).
+    match /scores/{docId} {
+      allow read: if verified();
+      allow create: if verified() && notBlocked() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.score is number && request.resource.data.score <= 100;
+      allow update, delete: if isAdmin();
+    }
+
+    // Ratings: one per user per target (doc id = target__uid).
+    match /ratings/{docId} {
+      allow read: if verified();
+      allow create, update: if verified() && notBlocked() && request.resource.data.uid == request.auth.uid
+        && docId == request.resource.data.target + '__' + request.auth.uid
+        && request.resource.data.value is number && request.resource.data.value >= 1 && request.resource.data.value <= 5;
+      allow delete: if isAdmin() || (verified() && resource.data.uid == request.auth.uid);
+    }
+
+    // Photo Mode gallery.
+    match /photos/{docId} {
+      allow read: if verified();
+      allow create: if verified() && notBlocked() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.image is string && request.resource.data.image.size() < 1000000;
+      allow delete: if isAdmin() || (verified() && resource.data.uid == request.auth.uid);
+    }
+  }
+}
