@@ -46,7 +46,7 @@ export default function Admin() {
         {link('/admin/pages', 'Pages (builder)', '🧱')}
         {link('/admin/media', 'Media library', '🗂️')}
         {link('/admin/texts', 'Site texts', '🔤')}
-        {link('/admin/styles', 'Text styles', '🎨')}
+        {link('/admin/styles', 'Styles', '🎨')}
         <div className="admin-h">Content</div>
         {Object.entries(COLLECTION_META)
           .filter(([k]) => k !== 'media')

@@ -434,33 +434,47 @@ export function Help() {
   );
 }
 
-// ================================ TEXT STYLES ================================
+// ================================ STYLES ================================
+const niceStyleKey = (k: string) => {
+  if (k.startsWith('t:')) return `Text · ${k.slice(2)}`;
+  if (k.startsWith('s:')) return `Settings text · ${k.slice(2)}`;
+  if (k.startsWith('f:')) return `Content text · ${k.slice(2).replace(/\//g, ' › ')}`;
+  if (k.startsWith('e:')) return `Element · ${k.slice(2).replace(/[-:]/g, ' ')}`;
+  if (k.startsWith('css:')) {
+    const route = k.match(/data-route="([^"]*)"/)?.[1];
+    return `Element on page ${route ?? '(every page)'}`;
+  }
+  return k;
+};
+
 export function TextStyles() {
   const { styles, saveStyle } = useCms();
   const keys = Object.keys(styles).sort();
-  const nice = (k: string) => (k.startsWith('t:') ? `Text · ${k.slice(2)}` : k.startsWith('s:') ? `Settings · ${k.slice(2)}` : k.startsWith('f:') ? `Content · ${k.slice(2).replace(/\//g, ' › ')}` : k);
+  const nice = niceStyleKey;
   return (
     <div>
-      <AdminTitle kicker="Typography" title="🎨 Text styles" />
+      <AdminTitle kicker="Look & layout" title="🎨 Styles" />
       <div className="card card-pad" style={{ marginBottom: 20 }}>
-        <b>How to style any text on the site:</b>
+        <b>How to style anything on the site (texts, buttons, menu, images, cards, sections…):</b>
         <ol style={{ margin: '8px 0 0', color: '#cfcac2', lineHeight: 1.9 }}>
           <li>Go to the page and press <b>✎ Edit</b> in the top bar.</li>
-          <li>Hover over any text with a dashed outline and press the gold <b>🎨 Style</b> button (or right-click the text).</li>
-          <li>Change size, position, tilt, slant, color, font, weight, spacing, glow, outline, or hide it. You see the result live.</li>
-          <li>Press <b>Save</b>. Everyone sees it immediately.</li>
+          <li>Hover over anything and press the gold <b>🎨 Style</b> button, or simply right-click it. Hold <b>Alt</b> to grab the exact element under the mouse.</li>
+          <li>Use <b>↑ Container</b> to select the bigger block around it (e.g. the whole menu) or <b>◎ Exact element</b> to go back to the smallest piece.</li>
+          <li>Change size, scale, position, tilt, slant, width, colors, font, background, border, corners, shadow, glow, image filters, or hide it. You see the result live.</li>
+          <li>Press <b>Save</b>. Everyone sees it immediately. Remove any change from the list below.</li>
         </ol>
         <p className="muted" style={{ marginBottom: 0 }}>
           For site-wide sizes (all headings, body text, the home hero), use <Link to="/admin/settings/typography" style={{ color: 'var(--gold)' }}>Site settings → Text sizes</Link>.
         </p>
       </div>
       <div style={{ ...adminCard, padding: 0 }}>
-        {keys.length === 0 && <div className="empty" style={{ margin: 20 }}>No custom text styles yet.</div>}
+        {keys.length === 0 && <div className="empty" style={{ margin: 20 }}>No custom styles yet.</div>}
         {keys.map((k) => (
           <div key={k} className="row" style={{ padding: '12px 18px', borderBottom: '1px solid var(--line)', justifyContent: 'space-between', flexWrap: 'nowrap' }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 600 }}>{nice(k)}</div>
               <div className="mono muted" style={{ fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {k.startsWith('css:') ? <span title={k.slice(4)}>{k.slice(4).replace(/^main\[data-route="[^"]*"\] > /, '')} · </span> : null}
                 {Object.entries(styles[k] || {})
                   .map(([a, b]) => `${a}: ${b}`)
                   .join(' · ')}

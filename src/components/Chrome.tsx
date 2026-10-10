@@ -109,6 +109,8 @@ export function MusicPlayer() {
   return (
     <motion.div
       className="glass"
+      data-sk="e:music-player"
+      data-sk-label="Music player"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       onMouseEnter={() => setOpen(true)}
@@ -194,25 +196,25 @@ export function Nav({ onSearch }: { onSearch: () => void }) {
   };
 
   return (
-    <header className={cx('nav', (scrolled || mega) && 'scrolled')} onMouseLeave={() => setMega(false)}>
+    <header data-sk="e:nav" data-sk-label="Menu bar" className={cx('nav', (scrolled || mega) && 'scrolled')} onMouseLeave={() => setMega(false)}>
       <div className="container">
-        <Link to="/" onClick={onLogo} style={{ display: 'flex', alignItems: 'center' }}>
+        <Link to="/" onClick={onLogo} data-sk="e:nav-logo" data-sk-label="Menu · logo" style={{ display: 'flex', alignItems: 'center' }}>
           <Logo height={24} />
         </Link>
         <nav className="nav-links">
           {main.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => cx('nav-link', isActive && 'active')} onMouseEnter={() => setMega(false)}>
+            <NavLink key={n.to} to={n.to} end={n.to === '/'} data-sk={`e:nav-link-${n.to}`} data-sk-label={`Menu · ${n.label}`} className={({ isActive }) => cx('nav-link', isActive && 'active')} onMouseEnter={() => setMega(false)}>
               {n.label}
             </NavLink>
           ))}
           {(explore.length > 0 || play.length > 0 || custom.length > 0) && (
-            <button className={cx('nav-link', mega && 'active')} onMouseEnter={() => setMega(true)} onClick={() => setMega(!mega)}>
+            <button data-sk="e:nav-more" data-sk-label="Menu · More" className={cx('nav-link', mega && 'active')} onMouseEnter={() => setMega(true)} onClick={() => setMega(!mega)}>
               More ▾
             </button>
           )}
         </nav>
         <div className="spacer" />
-        <button className="btn btn-sm" onClick={onSearch} style={{ gap: 14, paddingRight: 10 }}>
+        <button className="btn btn-sm" data-sk="e:nav-search" data-sk-label="Menu · search" onClick={onSearch} style={{ gap: 14, paddingRight: 10 }}>
           ⌕ Search <span className="kbd">Ctrl K</span>
         </button>
         {isAdmin && (
@@ -303,7 +305,7 @@ export function Nav({ onSearch }: { onSearch: () => void }) {
 export function Footer() {
   const { settings } = useCms();
   return (
-    <footer style={{ borderTop: '1px solid var(--line)', padding: '70px 0 50px', marginTop: 40, position: 'relative', overflow: 'hidden' }}>
+    <footer data-sk="e:footer" data-sk-label="Footer" style={{ borderTop: '1px solid var(--line)', padding: '70px 0 50px', marginTop: 40, position: 'relative', overflow: 'hidden' }}>
       <div className="container" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr', gap: 40 }}>
         <div>
           <Logo height={34} />
@@ -353,7 +355,7 @@ export function EditBar() {
       <span className="pulse-dot" style={{ background: 'var(--gold)' }} />
       <b style={{ fontSize: 13, letterSpacing: '.12em' }}>EDIT MODE</b>
       <span className="muted" style={{ fontSize: 12 }}>
-        Click a dashed text to edit it · hover and press 🎨 (or right-click) to resize, move, tilt and restyle it.
+        Click a dashed text to edit it · hover anything and press 🎨 (or right-click) to style it · hold Alt for the exact element.
       </span>
       <label className="row" style={{ fontSize: 12, gap: 8 }}>
         <button className={cx('toggle', previewDrafts && 'on')} onClick={() => setPreviewDrafts(!previewDrafts)} /> Preview drafts

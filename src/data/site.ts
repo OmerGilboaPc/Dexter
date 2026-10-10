@@ -67,6 +67,7 @@ export const defaultSettings = {
   features: {
     transitions: true,
     cursor: true,
+    cursorStyle: 'scalpel',
     sfx: true,
     loader: true,
     eggs: true,

@@ -39,7 +39,7 @@ function Hero() {
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   const h = settings.hero;
   return (
-    <section ref={ref} style={{ position: 'relative', height: '100vh', minHeight: 680, overflow: 'hidden' }}>
+    <section ref={ref} data-sk="e:home-hero" data-sk-label="Home · hero section" style={{ position: 'relative', height: '100vh', minHeight: 680, overflow: 'hidden' }}>
       <motion.div style={{ position: 'absolute', inset: 0, y, scale }}>
         <Visual src={h.video || h.image} seed="hero-dexter" accent="#d90f1e" mode="none" style={{ width: '100%', height: '100%' }} />
       </motion.div>
@@ -57,10 +57,10 @@ function Hero() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.8 }}>
           <SText path="hero.subtitle" as="p" className="lead" style={{ marginTop: 22 }} />
           <div className="row" style={{ marginTop: 34, gap: 14 }}>
-            <Link to={h.ctaLink || '/trailer'} className="btn btn-primary" onClick={() => sfx.click()}>
+            <Link to={h.ctaLink || '/trailer'} data-sk="e:home-cta1" data-sk-label="Home · button 1" className="btn btn-primary" onClick={() => sfx.click()}>
               ▶ <SText path="hero.ctaText" />
             </Link>
-            <Link to={h.cta2Link || '/kill-room'} className="btn">
+            <Link to={h.cta2Link || '/kill-room'} data-sk="e:home-cta2" data-sk-label="Home · button 2" className="btn">
               <SText path="hero.cta2Text" />
             </Link>
             {profile && (

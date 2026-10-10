@@ -14,7 +14,7 @@ import { ThemeInjector, PageTransition, MusicPlayer, Nav, Footer, EditBar } from
 import { SearchPalette } from './components/Search';
 import { EasterEggs } from './components/EasterEggs';
 import { AdminWatcher } from './components/AdminWatcher';
-import { StyleEditor } from './components/StyleEditor';
+import { StyleEditor, StyleInjector } from './components/StyleEditor';
 
 import { SignIn, SignUp, Forgot, Verify, Onboarding, Blocked } from './pages/auth/Auth';
 import Home from './pages/Home';
@@ -106,7 +106,8 @@ function Shell() {
 
   return (
     <>
-      {settings.features.cursor && <Cursor />}
+      <StyleInjector />
+      {settings.features.cursor && (settings.features as any).cursorStyle !== 'system' && <Cursor />}
       {settings.features.grain && <div className="grain" />}
       <AnimatePresence>{booting && settings.features.loader !== false && <Loader key="boot" />}</AnimatePresence>
       {content}
@@ -173,7 +174,7 @@ function MainLayout() {
   return (
     <>
       {!isAdminRoute && <Nav onSearch={() => setSearch(true)} />}
-      <motion.main key={loc.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: settings.features.transitions ? 0.35 : 0 }}>
+      <motion.main key={loc.pathname} data-route={loc.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: settings.features.transitions ? 0.35 : 0 }}>
         <Suspense fallback={<Loader label="Preparing the scene" />}>
           <Routes>
             <Route path="/" element={<Home />} />

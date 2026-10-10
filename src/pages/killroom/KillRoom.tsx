@@ -1,7 +1,8 @@
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, ContactShadows } from '@react-three/drei';
+import { OrbitControls, ContactShadows, PerformanceMonitor } from '@react-three/drei';
+import { QUALITY, QualityCtx, Quality } from './quality';
 import { EffectComposer, Bloom, DepthOfField, Noise, Vignette, ChromaticAberration, HueSaturation, BrightnessContrast, Sepia, ToneMapping } from '@react-three/postprocessing';
 import { ToneMappingMode } from 'postprocessing';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -118,15 +119,15 @@ function CameraRig({ fov, resetKey }: { fov: number; resetKey: number }) {
   return null;
 }
 
-function KeyLight({ l }: { l: ReturnType<typeof initialLight> }) {
+function KeyLight({ l, mapSize, shadows }: { l: ReturnType<typeof initialLight>; mapSize: number; shadows: boolean }) {
   const az = (l.keyAz * Math.PI) / 180;
   const el = (l.keyEl * Math.PI) / 180;
   const pos: [number, number, number] = [Math.cos(az) * Math.cos(el) * 5, Math.sin(el) * 5 + 0.5, Math.sin(az) * Math.cos(el) * 5];
   if (!l.keyOn) return null;
-  return <directionalLight position={pos} intensity={l.keyIntensity} color={l.keyColor} castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-4} shadow-camera-right={4} shadow-camera-top={4} shadow-camera-bottom={-4} />;
+  return <directionalLight position={pos} intensity={l.keyIntensity} color={l.keyColor} castShadow={shadows} shadow-mapSize={[mapSize, mapSize]} shadow-camera-left={-4} shadow-camera-right={4} shadow-camera-top={4} shadow-camera-bottom={-4} />;
 }
 
-function Effects({ fx }: { fx: ReturnType<typeof initialFx> }) {
+function Effects({ fx, msaa, bloom }: { fx: ReturnType<typeof initialFx>; msaa: number; bloom: boolean }) {
   const f = FILTERS[fx.filter] || FILTERS.none;
   const dof = useRef<any>(null);
   useEffect(() => {
@@ -137,9 +138,9 @@ function Effects({ fx }: { fx: ReturnType<typeof initialFx> }) {
   }, [fx.focus, fx.range, fx.bokeh, fx.dof]);
   const chroma = useMemo(() => new THREE.Vector2(fx.chroma + f.chroma, fx.chroma + f.chroma), [fx.chroma, f.chroma]);
   return (
-    <EffectComposer multisampling={4}>
+    <EffectComposer multisampling={msaa}>
       {fx.dof ? <DepthOfField ref={dof} worldFocusDistance={fx.focus} worldFocusRange={fx.range} bokehScale={fx.bokeh} /> : <></>}
-      <Bloom intensity={fx.bloom} luminanceThreshold={0.75} luminanceSmoothing={0.2} mipmapBlur />
+      {bloom && fx.bloom > 0 ? <Bloom intensity={fx.bloom} luminanceThreshold={0.75} luminanceSmoothing={0.2} mipmapBlur /> : <></>}
       <HueSaturation hue={f.hue} saturation={f.sat} />
       <BrightnessContrast brightness={f.bri + fx.exposure} contrast={f.con} />
       <Sepia intensity={f.sepia} />
@@ -167,6 +168,24 @@ export default function KillRoom() {
   const [jointNames, setJointNames] = useState<Record<string, string[]>>({ dexter: [...JOINTS], brian: [...JOINTS] });
   const [resetKey, setResetKey] = useState(0);
   const [breathing, setBreathing] = useState(true);
+  const [quality, setQuality] = useState<Quality>(() => {
+    try {
+      return (localStorage.getItem('dexter-quality') as Quality) || 'medium';
+    } catch {
+      return 'medium';
+    }
+  });
+  const [autoQ, setAutoQ] = useState(true);
+  const q = QUALITY[quality];
+  const changeQuality = (v: Quality, manual = true) => {
+    setQuality(v);
+    if (manual) setAutoQ(false);
+    try {
+      localStorage.setItem('dexter-quality', v);
+    } catch {
+      /* ignore */
+    }
+  };
   const [props, setProps] = useState<PropsState>(defaultProps);
   const [shot, setShot] = useState<string | null>(null);
   const [flash, setFlash] = useState(false);
@@ -334,10 +353,21 @@ export default function KillRoom() {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#000' }}>
-      <Canvas shadows dpr={[1, 2]} flat gl={{ preserveDrawingBuffer: true, antialias: false, powerPreference: 'high-performance' }} camera={{ position: [2.6, 2.1, 2.9], fov: fx.fov, near: 0.05, far: 200 }}>
+      <Canvas shadows={q.shadows} dpr={q.dpr} flat gl={{ preserveDrawingBuffer: true, antialias: false, powerPreference: 'high-performance', stencil: false }} camera={{ position: [2.6, 2.1, 2.9], fov: fx.fov, near: 0.05, far: 200 }}>
+        <PerformanceMonitor
+          onDecline={() => {
+            if (!autoQ) return;
+            if (quality === 'high') changeQuality('medium', false);
+            else if (quality === 'medium') {
+              changeQuality('low', false);
+              toast({ title: 'Graphics lowered', text: 'Switched to Low for smoother performance. Change it under Camera → Quality.' }, 5000);
+            }
+          }}
+        />
+        <QualityCtx.Provider value={q}>
         <GLBridge onGL={(gl) => (glRef.current = gl)} />
         <ambientLight intensity={light.ambient} />
-        <KeyLight l={light} />
+        <KeyLight l={light} mapSize={q.mapSize} shadows={q.shadows} />
         <Suspense fallback={null}>
           {scene === 'killroom' && (
             <>
@@ -362,11 +392,12 @@ export default function KillRoom() {
           {scene === 'cabin' && <CabinScene {...sceneProps}>{characters}</CabinScene>}
           {scene === 'vault' && <VaultScene {...sceneProps}>{characters}</VaultScene>}
           {scene !== 'boat' && <SceneProps p={props} />}
-          <ContactShadows position={[0, 0.003, 0]} opacity={0.55} scale={8} blur={2.2} far={2} />
+          {quality !== 'low' && <ContactShadows position={[0, 0.003, 0]} opacity={0.55} scale={8} blur={2.2} far={2} frames={Infinity} resolution={quality === 'high' ? 512 : 256} />}
         </Suspense>
         <OrbitControls makeDefault target={[0, 0.95, 0]} minDistance={0.3} maxDistance={scene === 'boat' ? 20 : 6} maxPolarAngle={Math.PI * 0.95} enableDamping dampingFactor={0.08} />
         <CameraRig fov={fx.fov} resetKey={resetKey} />
-        <Effects fx={fx} />
+        <Effects fx={fx} msaa={q.msaa} bloom={q.bloom} />
+        </QualityCtx.Provider>
       </Canvas>
 
       {/* letterbox preview */}
@@ -449,6 +480,8 @@ export default function KillRoom() {
                 <div style={{ padding: 18, overflow: 'auto', flex: 1 }}>
                   {tab === 'camera' && (
                     <>
+                      <Select label="Graphics quality" value={quality} options={[['low', 'Low (fastest)'], ['medium', 'Medium'], ['high', 'High (best looking)']]} onChange={(v) => changeQuality(v as Quality)} />
+                      <Toggle label="Auto-adjust for smooth performance" value={autoQ} onChange={setAutoQ} />
                       <Slider label="Field of view" value={fx.fov} min={15} max={100} step={1} unit="°" onChange={(v) => setFxK('fov', v)} />
                       <Toggle label="Depth of field" value={fx.dof} onChange={(v) => setFxK('dof', v)} />
                       {fx.dof && (

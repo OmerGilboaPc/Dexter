@@ -25,13 +25,15 @@ function Slide({ v, i, index, active, selected, hidden, onHover, onClick }: { v:
   const [hover, setHover] = useState(false);
   const col = i % COLS;
   const row = Math.floor(i / COLS);
-  const base = new THREE.Vector3((col - (COLS - 1) / 2) * SX, 0.06, row * SZ);
+  const base = useMemo(() => new THREE.Vector3((col - (COLS - 1) / 2) * SX, 0.06, row * SZ), [col, row]);
+  const tmp = useMemo(() => new THREE.Vector3(), []);
+  const sc = useMemo(() => new THREE.Vector3(1, 1, 1), []);
   const glass = useMemo(() => new THREE.MeshPhysicalMaterial({ color: '#dff1f6', transparent: true, opacity: 0.38, roughness: 0.04, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05 }), []);
   const label = useMemo(() => slideLabel(index, hidden ? '#9aa0a6' : '#f4f1ea'), [index, hidden]);
   const dropColor = v.killer === 'brian' ? '#2a6fb0' : '#7a0710';
   useFrame((_, dt) => {
     if (!g.current) return;
-    const target = base.clone();
+    const target = tmp.copy(base);
     let rx = 0;
     if (!active) target.y = -0.02;
     if (hover && active) target.y += 0.06;
@@ -43,7 +45,7 @@ function Slide({ v, i, index, active, selected, hidden, onHover, onClick }: { v:
     g.current.position.lerp(target, Math.min(1, dt * 8));
     g.current.rotation.x += (rx - g.current.rotation.x) * Math.min(1, dt * 8);
     const s = active ? 1 : 0.92;
-    g.current.scale.lerp(new THREE.Vector3(s, s, s), Math.min(1, dt * 6));
+    g.current.scale.lerp(sc.set(s, s, s), Math.min(1, dt * 6));
   });
   return (
     <group
@@ -291,19 +293,19 @@ export default function KillCount() {
 
       <div style={{ position: 'relative', overflow: view === 'list' ? 'auto' : 'hidden' }}>
         {view === 'box' ? (
-          <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 4.2, 4.6], fov: 40 }} onPointerMissed={() => setSel(null)}>
+          <Canvas shadows dpr={[1, 1.5]} gl={{ powerPreference: 'high-performance', stencil: false }} camera={{ position: [0, 4.2, 4.6], fov: 40 }} onPointerMissed={() => setSel(null)}>
             <color attach="background" args={['#070606']} />
             <fog attach="fog" args={['#070606', 8, 18]} />
             <ambientLight intensity={0.25} />
-            <spotLight position={[0, 6, 2]} angle={0.7} penumbra={0.6} intensity={60} castShadow shadow-mapSize={[2048, 2048]} color="#fff1dc" />
+            <spotLight position={[0, 6, 2]} angle={0.7} penumbra={0.6} intensity={60} castShadow shadow-mapSize={[1024, 1024]} color="#fff1dc" />
             <pointLight position={[-4, 2, 3]} intensity={6} color="#d90f1e" distance={12} />
             <pointLight position={[4, 2, -2]} intensity={3} color="#7cc4ff" distance={12} />
             <Suspense fallback={null}>
               <SlideBox list={pool} activeIds={active} selectedId={sel?.id || null} onSelect={select} hiddenIds={hidden} />
-              <ContactShadows position={[0, -0.04, 0]} opacity={0.6} scale={14} blur={2.5} far={3} />
+              <ContactShadows position={[0, -0.04, 0]} opacity={0.6} scale={14} blur={2.5} far={3} frames={1} resolution={256} />
             </Suspense>
             <OrbitControls makeDefault target={[0, 0, 0]} minDistance={1.2} maxDistance={10} maxPolarAngle={Math.PI * 0.46} enableDamping />
-            <EffectComposer multisampling={4}>
+            <EffectComposer multisampling={2}>
               <Bloom intensity={0.6} luminanceThreshold={0.7} mipmapBlur />
               <Noise opacity={0.05} premultiply />
               <Vignette offset={0.25} darkness={0.75} />

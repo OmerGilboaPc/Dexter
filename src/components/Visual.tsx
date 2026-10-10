@@ -57,7 +57,7 @@ export function Visual({ src, seed, label, accent, alt, className, style, fit = 
   const [err, setErr] = useState(false);
   const base: React.CSSProperties = { width: '100%', height: '100%', objectFit: fit, objectPosition: position, display: 'block' };
   return (
-    <div className={cx('visual', className)} style={{ position: 'relative', overflow: 'hidden', ...style }}>
+    <div className={cx('visual', className)} data-sk={`e:img-${seed || label || 'x'}`} data-sk-label={`Image · ${label || seed || ''}`} style={{ position: 'relative', overflow: 'hidden', ...style }}>
       {(!src || err || !loaded) && (
         <div style={{ position: 'absolute', inset: 0 }}>
           <SpatterArt seed={seed || label || 'x'} accent={accent} label={label} mode={mode} />

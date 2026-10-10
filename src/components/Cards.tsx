@@ -35,7 +35,7 @@ export function Tilt({ children, className, style, max = 8 }: { children: React.
 export function CharacterCard({ c, size = 'md' }: { c: any; size?: 'md' | 'lg' }) {
   return (
     <Tilt>
-      <Link to={`/characters/${c.id}`} className="media-card portrait-ratio" style={{ display: 'block', boxShadow: '0 30px 60px -30px rgba(0,0,0,.9)' }} onMouseEnter={() => sfx.hover()}>
+      <Link to={`/characters/${c.id}`} data-sk={`e:card-char-${c.id}`} data-sk-label={`Card · ${c.name}`} className="media-card portrait-ratio" style={{ display: 'block', boxShadow: '0 30px 60px -30px rgba(0,0,0,.9)' }} onMouseEnter={() => sfx.hover()}>
         <div className="media">
           <Visual src={c.portrait || c.heroImage} seed={c.id} label={c.name} accent={c.color || '#d90f1e'} position="center top" />
         </div>
@@ -64,7 +64,7 @@ export function VillainCard({ v }: { v: any }) {
   const hidden = isSpoiler(v.identitySpoiler);
   return (
     <Tilt max={6}>
-      <Link to={`/villains/${v.id}`} className="card hover" style={{ display: 'block', background: '#0f0d0b', borderColor: 'rgba(217,164,65,.18)' }}>
+      <Link to={`/villains/${v.id}`} data-sk={`e:card-villain-${v.id}`} data-sk-label={`Card · ${v.name}`} className="card hover" style={{ display: 'block', background: '#0f0d0b', borderColor: 'rgba(217,164,65,.18)' }}>
         <div style={{ position: 'relative', aspectRatio: '4/5' }}>
           <Visual src={v.image} seed={v.id} label={v.name} accent={s?.theme?.accent} mode="name" style={{ position: 'absolute', inset: 0, filter: 'grayscale(.5) contrast(1.1)' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 40%, rgba(10,8,6,.95))' }} />
@@ -93,7 +93,7 @@ export function SeasonCard({ s }: { s: any }) {
   const ser = col('series').find((x) => x.id === s.series);
   return (
     <Tilt max={7}>
-      <Link to={`/seasons/${s.id}`} className="media-card poster-ratio" style={{ display: 'block' }}>
+      <Link to={`/seasons/${s.id}`} data-sk={`e:card-season-${s.id}`} data-sk-label={`Card · ${s.title}`} className="media-card poster-ratio" style={{ display: 'block' }}>
         <div className="media">
           <Visual src={s.poster || s.heroImage} seed={s.id} label={s.series === 'dexter' ? `S${s.number}` : ser?.short} accent={ser?.theme?.accent} mode="name" />
         </div>

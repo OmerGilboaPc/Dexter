@@ -3,7 +3,7 @@ import { useCms, useT } from '../lib/cms';
 import { getPath, cx } from '../lib/util';
 import { MediaPicker, MediaKind } from './MediaPicker';
 import { toast } from '../lib/bus';
-import { styleToCss, styleTarget, usePreview } from '../lib/styles';
+import { styleToCss, usePreview } from '../lib/styles';
 
 /** Text that becomes contentEditable for the admin in Edit Mode, with optional per-element styling. */
 export function EditableText({ value, onSave, as = 'span', className, style, multiline, placeholder, styleKey, label }: { value: string; onSave: (v: string) => Promise<any> | void; as?: any; className?: string; style?: React.CSSProperties; multiline?: boolean; placeholder?: string; styleKey?: string; label?: string }) {
@@ -41,17 +41,8 @@ export function EditableText({ value, onSave, as = 'span', className, style, mul
       contentEditable
       suppressContentEditableWarning
       data-placeholder={placeholder}
-      onMouseEnter={(e: any) => {
-        if (!styleKey) return;
-        const cur = styleTarget.get();
-        if (cur?.open) return;
-        styleTarget.set({ key: styleKey, label: label || value?.slice(0, 40) || styleKey, el: e.currentTarget, open: false });
-      }}
-      onContextMenu={(e: any) => {
-        if (!styleKey) return;
-        e.preventDefault();
-        styleTarget.set({ key: styleKey, label: label || value?.slice(0, 40) || styleKey, el: e.currentTarget, open: true });
-      }}
+      data-sk={styleKey}
+      data-sk-label={label}
       onClick={(e: any) => {
         e.preventDefault();
         e.stopPropagation();

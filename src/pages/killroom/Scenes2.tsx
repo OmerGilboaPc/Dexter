@@ -2,6 +2,7 @@ import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Table, ToolCart, HangingLamp, PlasticSheet } from './Scenes';
+import { useQuality } from './quality';
 import { woodTex, logTex, marbleTex, rustTex, cityNightTex, snowWindowTex, plasticNormal, evidencePhoto } from './textures';
 
 type SP = { lampOn: boolean; lampColor: string; lampIntensity: number; children?: React.ReactNode };
@@ -91,6 +92,7 @@ export function ApartmentScene({ lampOn, lampColor, lampIntensity, children }: S
 
 // ============================== The shipping container ==============================
 function SwingingBulb({ on, color, intensity }: { on: boolean; color: string; intensity: number }) {
+  const q = useQuality();
   const g = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
     if (g.current) g.current.rotation.z = Math.sin(clock.elapsedTime * 0.9) * 0.08;
@@ -105,7 +107,7 @@ function SwingingBulb({ on, color, intensity }: { on: boolean; color: string; in
         <sphereGeometry args={[0.05, 12, 10]} />
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={on ? 5 : 0.1} />
       </mesh>
-      {on && <pointLight position={[0, -0.7, 0]} intensity={intensity * 0.35} distance={7} decay={1.6} color={color} castShadow shadow-mapSize={[1024, 1024]} />}
+      {on && <pointLight position={[0, -0.7, 0]} intensity={intensity * 0.35} distance={7} decay={1.6} color={color} castShadow={q.pointShadows} shadow-mapSize={[512, 512]} />}
     </group>
   );
 }
@@ -144,6 +146,7 @@ export function ContainerScene({ lampOn, lampColor, lampIntensity, children }: S
 
 // ============================== New Blood: the cabin ==============================
 function Fire({ on }: { on: boolean }) {
+  const q = useQuality();
   const l = useRef<THREE.PointLight>(null);
   useFrame(({ clock }) => {
     if (l.current) l.current.intensity = on ? 9 + Math.sin(clock.elapsedTime * 11) * 1.6 + Math.sin(clock.elapsedTime * 23) * 0.9 : 0;
@@ -158,7 +161,7 @@ function Fire({ on }: { on: boolean }) {
         <boxGeometry args={[0.9, 0.7, 0.02]} />
         <meshStandardMaterial color="#1a0a04" emissive="#ff6a1a" emissiveIntensity={on ? 1.8 : 0} />
       </mesh>
-      <pointLight ref={l} position={[0, 0.6, 0.8]} distance={8} color="#ff8a3a" castShadow />
+      <pointLight ref={l} position={[0, 0.6, 0.8]} distance={8} color="#ff8a3a" castShadow={q.pointShadows} />
     </group>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
+import { useQuality } from './quality';
 import { plasticNormal, woodTex, deckTex, metalRibs, concreteTex, evidencePhoto, loadImageTexture } from './textures';
 
 // ============================== shared props ==============================
@@ -154,6 +155,7 @@ export function ToolCart({ position = [0, 0, 0] as [number, number, number], rot
 }
 
 export function HangingLamp({ position = [0, 2.6, 0] as [number, number, number], on = true, color = '#fff2d6', intensity = 40 }) {
+  const q = useQuality();
   const target = useMemo(() => {
     const o = new THREE.Object3D();
     o.position.set(position[0], 0, position[2]);
@@ -174,7 +176,7 @@ export function HangingLamp({ position = [0, 2.6, 0] as [number, number, number]
         <sphereGeometry args={[0.06, 12, 10]} />
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={on ? 6 : 0} />
       </mesh>
-      {on && <spotLight position={[position[0], position[1] - 0.1, position[2]]} target={target} angle={0.75} penumbra={0.55} intensity={intensity} distance={9} decay={1.6} color={color} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004} />}
+      {on && <spotLight position={[position[0], position[1] - 0.1, position[2]]} target={target} angle={0.75} penumbra={0.55} intensity={intensity} distance={9} decay={1.6} color={color} castShadow={q.shadows} shadow-mapSize={[q.mapSize, q.mapSize]} shadow-bias={-0.0004} />}
     </group>
   );
 }
@@ -234,23 +236,31 @@ export function KillRoomScene({ lampOn, lampColor, lampIntensity, photos, childr
 }
 
 function Water() {
-  const ref = useRef<THREE.Mesh>(null);
-  const geo = useMemo(() => new THREE.PlaneGeometry(120, 120, 90, 90), []);
-  const base = useMemo(() => Float32Array.from(geo.attributes.position.array as Float32Array), [geo]);
+  // Waves are computed on the GPU (vertex shader) with analytic normals.
+  const uTime = useMemo(() => ({ value: 0 }), []);
+  const mat = useMemo(() => {
+    const m = new THREE.MeshPhysicalMaterial({ color: '#071b26', roughness: 0.12, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.1 });
+    m.onBeforeCompile = (sh) => {
+      sh.uniforms.uTime = uTime;
+      sh.vertexShader =
+        'uniform float uTime;\n' +
+        sh.vertexShader
+          .replace(
+            '#include <beginnormal_vertex>',
+            `float k1 = position.x * 0.35 + uTime * 0.9; float k2 = position.y * 0.5 + uTime * 1.3; float k3 = (position.x + position.y) * 0.9 + uTime * 2.0;
+             float dx = cos(k1) * 0.042 + cos(k3) * 0.027; float dy = cos(k2) * 0.04 + cos(k3) * 0.027;
+             vec3 objectNormal = normalize(vec3(-dx, -dy, 1.0));`,
+          )
+          .replace('#include <begin_vertex>', 'vec3 transformed = vec3(position); transformed.z += sin(k1) * 0.12 + sin(k2) * 0.08 + sin(k3) * 0.03;');
+    };
+    return m;
+  }, [uTime]);
   useFrame(({ clock }) => {
-    const t = clock.elapsedTime;
-    const p = geo.attributes.position as THREE.BufferAttribute;
-    for (let i = 0; i < p.count; i++) {
-      const x = base[i * 3];
-      const y = base[i * 3 + 1];
-      p.setZ(i, Math.sin(x * 0.35 + t * 0.9) * 0.12 + Math.sin(y * 0.5 + t * 1.3) * 0.08 + Math.sin((x + y) * 0.9 + t * 2) * 0.03);
-    }
-    p.needsUpdate = true;
-    geo.computeVertexNormals();
+    uTime.value = clock.elapsedTime;
   });
   return (
-    <mesh ref={ref} geometry={geo} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.6, 0]} receiveShadow>
-      <meshPhysicalMaterial color="#071b26" roughness={0.12} metalness={0.2} clearcoat={1} clearcoatRoughness={0.1} />
+    <mesh material={mat} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.6, 0]} receiveShadow>
+      <planeGeometry args={[120, 120, 120, 120]} />
     </mesh>
   );
 }
@@ -279,6 +289,7 @@ function Skyline() {
 }
 
 export function BoatScene({ lampOn, lampColor, lampIntensity, children }: { lampOn: boolean; lampColor: string; lampIntensity: number; children?: React.ReactNode }) {
+  const q = useQuality();
   const boat = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
     if (!boat.current) return;
@@ -297,7 +308,7 @@ export function BoatScene({ lampOn, lampColor, lampIntensity, children }: { lamp
         <sphereGeometry args={[2.2, 32, 24]} />
         <meshStandardMaterial color="#f4f1e6" emissive="#f4f1e6" emissiveIntensity={1.4} />
       </mesh>
-      <directionalLight position={[18, 14, -40]} intensity={0.7} color="#a9c4ff" castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={6} shadow-camera-bottom={-6} />
+      <directionalLight position={[18, 14, -40]} intensity={0.7} color="#a9c4ff" castShadow={q.shadows} shadow-mapSize={[q.mapSize, q.mapSize]} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={6} shadow-camera-bottom={-6} />
       <group ref={boat}>
         {/* hull */}
         <mesh position={[0, -0.35, 0.5]} castShadow receiveShadow>
@@ -350,7 +361,7 @@ export function BoatScene({ lampOn, lampColor, lampIntensity, children }: { lamp
         </mesh>
         <Table />
         <ToolCart position={[1.0, 0, -0.6]} />
-        {lampOn && <pointLight position={[0, 1.9, -1.2]} intensity={lampIntensity * 0.6} distance={7} color={lampColor} castShadow />}
+        {lampOn && <pointLight position={[0, 1.9, -1.2]} intensity={lampIntensity * 0.6} distance={7} color={lampColor} castShadow={q.pointShadows} />}
         {children}
       </group>
     </group>
@@ -389,6 +400,7 @@ function Frost() {
 }
 
 export function TruckScene({ lampOn, lampColor, lampIntensity, children }: { lampOn: boolean; lampColor: string; lampIntensity: number; children?: React.ReactNode }) {
+  const q = useQuality();
   const ribs = metalRibs();
   return (
     <group>
@@ -410,7 +422,7 @@ export function TruckScene({ lampOn, lampColor, lampIntensity, children }: { lam
             <boxGeometry args={[0.08, 0.04, 1.2]} />
             <meshStandardMaterial color="#dff3ff" emissive="#bfe6ff" emissiveIntensity={lampOn ? 5 : 0.2} />
           </mesh>
-          {lampOn && <pointLight position={[0, -0.2, 0]} intensity={lampIntensity * 0.25} distance={5} color={lampColor === '#ffe9c4' ? '#bfe6ff' : lampColor} castShadow={i === 1} />}
+          {lampOn && <pointLight position={[0, -0.2, 0]} intensity={lampIntensity * 0.25} distance={5} color={lampColor === '#ffe9c4' ? '#bfe6ff' : lampColor} castShadow={q.pointShadows && i === 1} />}
         </group>
       ))}
       {/* meat rail + hooks */}
@@ -439,7 +451,7 @@ export function TruckScene({ lampOn, lampColor, lampIntensity, children }: { lam
       ].map((p, i) => (
         <mesh key={i} position={p as any} rotation={[0, i * 0.3, 0]} castShadow>
           <boxGeometry args={[0.45, 0.4, 0.45]} />
-          <meshPhysicalMaterial color="#cdeeff" transparent opacity={0.55} roughness={0.08} transmission={0.3} thickness={0.4} />
+          <meshPhysicalMaterial color="#cdeeff" transparent opacity={0.55} roughness={0.08} />
         </mesh>
       ))}
       <Frost />
