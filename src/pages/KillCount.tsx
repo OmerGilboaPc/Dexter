@@ -285,7 +285,7 @@ export default function KillCount() {
           </button>
         </div>
         {editMode && (
-          <Link to="/admin/c/victims" className="btn btn-sm" style={{ marginTop: 18, width: '100%' }}>
+          <Link to="/admin/c/victims" data-edit-only className="btn btn-sm" style={{ marginTop: 18, width: '100%' }}>
             ✎ Manage victims
           </Link>
         )}

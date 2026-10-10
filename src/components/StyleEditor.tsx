@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { motion, useDragControls } from 'framer-motion';
 import { useCms } from '../lib/cms';
 import { useStore, toast } from '../lib/bus';
-import { styleTarget, stylePreview, TextStyle, StyleTarget, usePreview, styleToCssText, selectorFor, isElementKey, autoSelector, describeEl } from '../lib/styles';
+import { useLocation } from 'react-router-dom';
+import { styleTarget, stylePreview, TextStyle, StyleTarget, usePreview, styleToCssText, selectorFor, isElementKey, autoSelector, describeEl, EDIT_ONLY, isLegacyKey } from '../lib/styles';
 import { cx } from '../lib/util';
 
 /** Applies saved (and previewed) element styles for everyone. Always mounted. */
@@ -24,7 +25,7 @@ export function StyleInjector() {
   return <style id="dexter-element-styles">{css}</style>;
 }
 
-const IGNORE = '#style-panel, .edit-bar, .style-fab, .toasts, .modal-back';
+const IGNORE = `#style-panel, .edit-bar, .style-fab, .toasts, .modal-back, ${EDIT_ONLY}`;
 
 // Decorative overlays (glare, gradients on cards etc.) are see-through for targeting, so the image under them gets picked.
 const DECOR = '.shade, .grain, .vignette';
@@ -40,10 +41,8 @@ function pick(e: MouseEvent): HTMLElement {
 
 function resolve(el: HTMLElement, exact: boolean): StyleTarget | null {
   if (el.closest(IGNORE)) return null;
-  if (!exact) {
-    const tagged = el.closest('[data-sk]') as HTMLElement | null;
-    if (tagged) return fromTagged(tagged);
-  }
+  const tagged = (exact ? (el.dataset.sk ? el : null) : el.closest('[data-sk]')) as HTMLElement | null;
+  if (tagged) return fromTagged(tagged);
   const key = 'css:' + autoSelector(el);
   return { key, label: describeEl(el), el, open: false, kind: el.matches('img, video, canvas, .visual') ? 'image' : 'element' };
 }
@@ -56,9 +55,40 @@ function fromTagged(el: HTMLElement): StyleTarget {
 
 /** Edit Mode only: hover anything to get a 🎨 button (Alt = the exact element), right-click to open the panel. */
 export function StyleEditor() {
-  const { editMode } = useCms();
+  const { editMode, styles, replaceStyles } = useCms();
   const target = useStore(styleTarget);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const loc = useLocation();
+
+  // Repair styles saved with older selectors (they counted Edit-Mode-only buttons, so they vanished outside Edit Mode).
+  useEffect(() => {
+    if (!editMode) return;
+    const legacy = Object.keys(styles).filter(isLegacyKey);
+    if (!legacy.length) return;
+    const timer = setTimeout(() => {
+      const next: Record<string, any> = { ...styles };
+      let fixed = 0;
+      for (const k of legacy) {
+        let el: HTMLElement | null = null;
+        try {
+          el = document.querySelector(k.slice(4));
+        } catch {
+          continue;
+        }
+        if (!el) continue;
+        const nk = el.dataset.sk || 'css:' + autoSelector(el);
+        if (nk === k) continue;
+        next[nk] = { ...(next[nk] || {}), ...styles[k] };
+        delete next[k];
+        fixed++;
+      }
+      if (fixed)
+        replaceStyles(next)
+          .then(() => toast({ title: 'Styles repaired', text: `${fixed} older style${fixed > 1 ? 's' : ''} now stick outside Edit Mode too.`, kind: 'success' }, 3000))
+          .catch(() => {});
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [editMode, loc.pathname, styles]);
 
   useEffect(() => {
     if (!editMode) {
@@ -193,13 +223,10 @@ function StylePanel({ t, onClose }: { t: StyleTarget; onClose: () => void }) {
     close();
   };
   const retarget = (el: HTMLElement | null, exact: boolean) => {
-    if (!el) return;
+    const nt = el && resolve(el, exact);
+    if (!nt) return;
     clearPreview();
-    const nt = exact ? { key: 'css:' + autoSelector(el), label: describeEl(el), el, open: true, kind: el.matches('img, video, .visual') ? 'image' : 'element' } : null;
-    if (nt) return styleTarget.set(nt as StyleTarget);
-    const tagged = el.closest('[data-sk]') as HTMLElement | null;
-    if (tagged) styleTarget.set({ key: tagged.dataset.sk!, label: tagged.dataset.skLabel || describeEl(tagged), el: tagged, open: true, kind: /^(t|f|s):/.test(tagged.dataset.sk!) ? 'text' : 'element' });
-    else styleTarget.set({ key: 'css:' + autoSelector(el), label: describeEl(el), el, open: true, kind: 'element' });
+    styleTarget.set({ ...nt, open: true });
   };
 
   const text = (
@@ -371,7 +398,7 @@ function StylePanel({ t, onClose }: { t: StyleTarget; onClose: () => void }) {
         </div>
       </div>
       <div className="row" style={{ gap: 6, marginBottom: 8 }}>
-        <button className="btn btn-xs" title="Style the element that contains this one" onClick={() => retarget(t.el?.parentElement || null, false)}>
+        <button className="btn btn-xs" title="Style the element that contains this one" onClick={() => retarget(t.el?.parentElement || null, true)}>
           ↑ Container
         </button>
         <button className="btn btn-xs" title="Style exactly this element" onClick={() => retarget(t.el, true)}>

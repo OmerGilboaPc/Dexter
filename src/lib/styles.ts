@@ -120,7 +120,11 @@ export type StyleTarget = { key: string; label: string; el: HTMLElement | null; 
 export const styleTarget = createStore<StyleTarget | null>(null);
 export const usePreview = () => useStore(stylePreview);
 
-/** Build a stable selector for any element, scoped to the current page. */
+/** Elements that only exist in Edit Mode (they must not shift positions of the real content). */
+export const EDIT_ONLY = '[data-edit-only], .edit-media';
+const REAL = `:not(${EDIT_ONLY})`;
+
+/** Build a stable selector for any element, scoped to the current page. Edit-only elements are not counted, so it matches with or without Edit Mode. */
 export function autoSelector(el: HTMLElement): string {
   const parts: string[] = [];
   let cur: HTMLElement | null = el;
@@ -138,12 +142,16 @@ export function autoSelector(el: HTMLElement): string {
       return parts.join(' > ');
     }
     const p: HTMLElement = cur.parentElement;
-    const idx = Array.prototype.indexOf.call(p.children, cur) + 1;
-    parts.unshift(`${cur.tagName.toLowerCase()}:nth-child(${idx})`);
+    const real = Array.prototype.filter.call(p.children, (c: Element) => !c.matches(EDIT_ONLY)) as Element[];
+    const idx = real.indexOf(cur) + 1;
+    parts.unshift(`${cur.tagName.toLowerCase()}:nth-child(${idx} of ${REAL})`);
     cur = p;
   }
   return parts.join(' > ');
 }
+
+/** Selectors saved before edit-only elements were ignored (they break outside Edit Mode). */
+export const isLegacyKey = (k: string) => k.startsWith('css:') && k.includes(':nth-child(') && !k.includes(' of ');
 
 export const describeEl = (el: HTMLElement) => {
   const tag = el.tagName.toLowerCase();

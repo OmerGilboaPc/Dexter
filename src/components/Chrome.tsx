@@ -218,12 +218,12 @@ export function Nav({ onSearch }: { onSearch: () => void }) {
           ⌕ Search <span className="kbd">Ctrl K</span>
         </button>
         {isAdmin && (
-          <button className={cx('btn btn-sm', editMode && 'btn-primary')} onClick={() => setEditMode(!editMode)} title="Inline Edit Mode">
+          <button data-edit-only className={cx('btn btn-sm', editMode && 'btn-primary')} onClick={() => setEditMode(!editMode)} title="Inline Edit Mode">
             ✎ {editMode ? 'Editing' : 'Edit'}
           </button>
         )}
         <div style={{ position: 'relative' }}>
-          <button onClick={() => setMenu(!menu)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button data-sk="e:nav-avatar" data-sk-label="Menu · profile picture" onClick={() => setMenu(!menu)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
             <div className="avatar">{profile?.avatar ? <img src={profile.avatar} alt="" /> : initials(profile?.username || '?')}</div>
           </button>
           <AnimatePresence>
@@ -238,7 +238,7 @@ export function Nav({ onSearch }: { onSearch: () => void }) {
                 <Link to="/profile">👤 Profile</Link>
                 <Link to="/settings">⚙ Settings & Spoilers</Link>
                 <Link to="/leaderboard">🏆 Leaderboard</Link>
-                {isAdmin && <Link to="/admin">🛠 Admin Panel</Link>}
+                {isAdmin && <Link data-edit-only to="/admin">🛠 Admin Panel</Link>}
                 <button
                   onClick={async () => {
                     music.pause();

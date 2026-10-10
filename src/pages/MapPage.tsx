@@ -54,7 +54,7 @@ export default function MapPage() {
               </button>
             ))}
           </div>
-          {editMode && <p className="muted" style={{ fontSize: 12 }}>Edit Mode: drag a pin to move it.</p>}
+          {editMode && <p data-edit-only className="muted" style={{ fontSize: 12 }}>Edit Mode: drag a pin to move it.</p>}
         </div>
         <div style={{ padding: '10px 16px 40px' }}>
           {list.map((l) => {

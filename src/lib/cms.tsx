@@ -15,6 +15,7 @@ interface CmsCtx {
   strings: Record<string, string>;
   styles: Record<string, any>;
   saveStyle: (key: string, style: any | null) => Promise<void>;
+  replaceStyles: (map: Record<string, any>) => Promise<void>;
   col: (name: string) => any[];
   item: (name: string, id: string) => any;
   editMode: boolean;
@@ -262,6 +263,14 @@ export function CmsProvider({ signedIn, isAdmin, uid, children }: { signedIn: bo
     }
   };
 
+  const replaceStyles: CmsCtx['replaceStyles'] = async (map) => {
+    try {
+      await setDoc(doc(db, 'settings', 'styles'), { map: clean(map) });
+    } catch (e) {
+      fail(e);
+    }
+  };
+
   const isDefault = (colName: string, id: string) => !!(defaults[colName] || []).find((d) => d.id === id);
 
   /** Writes every built-in default into Firestore so the whole site lives in the database. */
@@ -293,6 +302,7 @@ export function CmsProvider({ signedIn, isAdmin, uid, children }: { signedIn: bo
     strings: stringsDoc || {},
     styles: stylesDoc || {},
     saveStyle,
+    replaceStyles,
     col,
     item,
     editMode: isAdmin && editMode,

@@ -19,7 +19,7 @@ export function EditableText({ value, onSave, as = 'span', className, style, mul
   if (!editMode) {
     if (multiline && value && value.includes('\n')) {
       return (
-        <Tag className={className} style={css}>
+        <Tag className={className} style={css} data-sk={styleKey} data-sk-label={label}>
           {value.split(/\n{2,}/).map((p, i) => (
             <p key={i}>{p}</p>
           ))}
@@ -27,7 +27,7 @@ export function EditableText({ value, onSave, as = 'span', className, style, mul
       );
     }
     return (
-      <Tag className={className} style={css}>
+      <Tag className={className} style={css} data-sk={styleKey} data-sk-label={label}>
         {value}
       </Tag>
     );
@@ -98,6 +98,7 @@ export function MediaEdit({ current, onPick, kind = 'image', label = 'Change', s
     <>
       <button
         className="btn btn-xs btn-white edit-media"
+        data-edit-only
         style={style}
         onClick={(e) => {
           e.preventDefault();

@@ -232,7 +232,7 @@ function Gallery({ c }: { c: any }) {
       <div className="container">
         <SectionHead tk={`char.${c.id}.gallery`} kicker="Gallery" title="Images">
           {editMode && (
-            <div style={{ position: 'relative', width: 140, height: 40 }}>
+            <div data-edit-only style={{ position: 'relative', width: 140, height: 40 }}>
               <MediaEdit label="Add" onPick={(u) => u && patchItem('characters', c.id, 'gallery', [...g, u])} style={{ top: 0, right: 0 }} />
             </div>
           )}
@@ -242,7 +242,7 @@ function Gallery({ c }: { c: any }) {
             <div key={i} style={{ breakInside: 'avoid', marginBottom: 16, position: 'relative' }}>
               <img src={u} alt="" onClick={() => setLb(u)} style={{ width: '100%', borderRadius: 12, cursor: 'zoom-in' }} />
               {editMode && (
-                <button className="btn btn-xs btn-danger" style={{ position: 'absolute', top: 10, right: 10, background: '#000' }} onClick={() => patchItem('characters', c.id, 'gallery', g.filter((_, j) => j !== i))}>
+                <button data-edit-only className="btn btn-xs btn-danger" style={{ position: 'absolute', top: 10, right: 10, background: '#000' }} onClick={() => patchItem('characters', c.id, 'gallery', g.filter((_, j) => j !== i))}>
                   Remove
                 </button>
               )}
