@@ -3,19 +3,23 @@ import { useCms, useT } from '../lib/cms';
 import { getPath, cx } from '../lib/util';
 import { MediaPicker, MediaKind } from './MediaPicker';
 import { toast } from '../lib/bus';
+import { styleToCss, styleTarget, usePreview } from '../lib/styles';
 
-/** Text that becomes contentEditable for the admin in Edit Mode. */
-export function EditableText({ value, onSave, as = 'span', className, style, multiline, placeholder }: { value: string; onSave: (v: string) => Promise<any> | void; as?: any; className?: string; style?: React.CSSProperties; multiline?: boolean; placeholder?: string }) {
-  const { editMode } = useCms();
+/** Text that becomes contentEditable for the admin in Edit Mode, with optional per-element styling. */
+export function EditableText({ value, onSave, as = 'span', className, style, multiline, placeholder, styleKey, label }: { value: string; onSave: (v: string) => Promise<any> | void; as?: any; className?: string; style?: React.CSSProperties; multiline?: boolean; placeholder?: string; styleKey?: string; label?: string }) {
+  const { editMode, styles } = useCms();
+  const preview = usePreview();
   const ref = useRef<HTMLElement>(null);
   const Tag = as;
   useEffect(() => {
     if (editMode && ref.current && document.activeElement !== ref.current) ref.current.innerText = value || '';
   }, [value, editMode]);
+  const st = styleKey ? (styleKey in preview ? preview[styleKey] : styles[styleKey]) : null;
+  const css = { ...style, ...styleToCss(st) };
   if (!editMode) {
     if (multiline && value && value.includes('\n')) {
       return (
-        <Tag className={className} style={style}>
+        <Tag className={className} style={css}>
           {value.split(/\n{2,}/).map((p, i) => (
             <p key={i}>{p}</p>
           ))}
@@ -23,19 +27,31 @@ export function EditableText({ value, onSave, as = 'span', className, style, mul
       );
     }
     return (
-      <Tag className={className} style={style}>
+      <Tag className={className} style={css}>
         {value}
       </Tag>
     );
   }
+  const hiddenInEdit = st?.hidden;
   return (
     <Tag
       ref={ref}
       className={cx(className, 'editable')}
-      style={{ ...style, whiteSpace: multiline ? 'pre-wrap' : undefined }}
+      style={{ ...css, ...(hiddenInEdit ? { display: undefined, opacity: 0.25, outlineStyle: 'dotted' } : {}), whiteSpace: multiline ? 'pre-wrap' : undefined }}
       contentEditable
       suppressContentEditableWarning
       data-placeholder={placeholder}
+      onMouseEnter={(e: any) => {
+        if (!styleKey) return;
+        const cur = styleTarget.get();
+        if (cur?.open) return;
+        styleTarget.set({ key: styleKey, label: label || value?.slice(0, 40) || styleKey, el: e.currentTarget, open: false });
+      }}
+      onContextMenu={(e: any) => {
+        if (!styleKey) return;
+        e.preventDefault();
+        styleTarget.set({ key: styleKey, label: label || value?.slice(0, 40) || styleKey, el: e.currentTarget, open: true });
+      }}
       onClick={(e: any) => {
         e.preventDefault();
         e.stopPropagation();
@@ -51,7 +67,7 @@ export function EditableText({ value, onSave, as = 'span', className, style, mul
         }
       }}
       onBlur={async (e: any) => {
-        const v = (e.target as HTMLElement).innerText.replace(/ /g, ' ').trimEnd();
+        const v = (e.target as HTMLElement).innerText.replace(/\u00a0/g, ' ').trimEnd();
         if (v !== (value || '')) {
           await onSave(v);
           toast({ title: 'Saved', text: 'Edit published live', kind: 'success' }, 1800);
@@ -65,21 +81,21 @@ export function EditableText({ value, onSave, as = 'span', className, style, mul
 export function T({ k, d, as, className, style, multiline }: { k: string; d: string; as?: any; className?: string; style?: React.CSSProperties; multiline?: boolean }) {
   const t = useT();
   const { saveString } = useCms();
-  return <EditableText value={t(k, d)} onSave={(v) => saveString(k, v)} as={as} className={className} style={style} multiline={multiline} />;
+  return <EditableText value={t(k, d)} onSave={(v) => saveString(k, v)} as={as} className={className} style={style} multiline={multiline} styleKey={`t:${k}`} label={k} />;
 }
 
 /** A field on a CMS item. */
 export function F({ col, item, path, as, className, style, multiline }: { col: string; item: any; path: string; as?: any; className?: string; style?: React.CSSProperties; multiline?: boolean }) {
   const { patchItem } = useCms();
   const v = getPath(item, path);
-  return <EditableText value={v == null ? '' : String(v)} onSave={(nv) => patchItem(col, item.id, path, nv)} as={as} className={className} style={style} multiline={multiline} />;
+  return <EditableText value={v == null ? '' : String(v)} onSave={(nv) => patchItem(col, item.id, path, nv)} as={as} className={className} style={style} multiline={multiline} styleKey={`f:${col}/${item.id}/${path}`} label={`${col} › ${item.id} › ${path}`} />;
 }
 
 /** A value inside the site settings document. */
 export function SText({ path, as, className, style, multiline }: { path: string; as?: any; className?: string; style?: React.CSSProperties; multiline?: boolean }) {
   const { settings, saveSettings } = useCms();
   const v = getPath(settings, path);
-  return <EditableText value={v == null ? '' : String(v)} onSave={(nv) => saveSettings(path, nv)} as={as} className={className} style={style} multiline={multiline} />;
+  return <EditableText value={v == null ? '' : String(v)} onSave={(nv) => saveSettings(path, nv)} as={as} className={className} style={style} multiline={multiline} styleKey={`s:${path}`} label={`settings › ${path}`} />;
 }
 
 /** Floating "change media" button shown in Edit Mode. */

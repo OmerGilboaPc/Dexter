@@ -14,6 +14,7 @@ import { ThemeInjector, PageTransition, MusicPlayer, Nav, Footer, EditBar } from
 import { SearchPalette } from './components/Search';
 import { EasterEggs } from './components/EasterEggs';
 import { AdminWatcher } from './components/AdminWatcher';
+import { StyleEditor } from './components/StyleEditor';
 
 import { SignIn, SignUp, Forgot, Verify, Onboarding, Blocked } from './pages/auth/Auth';
 import Home from './pages/Home';
@@ -216,6 +217,7 @@ function MainLayout() {
       <EditBar />
       <EasterEggs />
       <AdminWatcher />
+      <StyleEditor />
       <SearchPalette open={search} onClose={() => setSearch(false)} />
       <AnimatePresence>{showIntro && <Intro key="intro" />}</AnimatePresence>
     </>

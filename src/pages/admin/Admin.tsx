@@ -8,7 +8,7 @@ import { Logo } from '../../components/Logo';
 import { COLLECTION_META, SETTINGS_SECTIONS } from './schemas';
 import { Fields, FieldInput } from './FormFields';
 import { CollectionEditor, PagesBuilder } from './AdminContent';
-import { MediaLibrary, Texts, Users, History, Help, GalleryAdmin } from './AdminMisc';
+import { MediaLibrary, Texts, Users, History, Help, GalleryAdmin, TextStyles } from './AdminMisc';
 import { defaultSettings } from '../../data/site';
 import { cx, fmtMinutes, timeAgo, toDate } from '../../lib/util';
 import { toast } from '../../lib/bus';
@@ -46,6 +46,7 @@ export default function Admin() {
         {link('/admin/pages', 'Pages (builder)', '🧱')}
         {link('/admin/media', 'Media library', '🗂️')}
         {link('/admin/texts', 'Site texts', '🔤')}
+        {link('/admin/styles', 'Text styles', '🎨')}
         <div className="admin-h">Content</div>
         {Object.entries(COLLECTION_META)
           .filter(([k]) => k !== 'media')
@@ -82,6 +83,7 @@ export default function Admin() {
           <Route path="pages/:id" element={<PagesBuilder />} />
           <Route path="media" element={<MediaLibrary />} />
           <Route path="texts" element={<Texts />} />
+          <Route path="styles" element={<TextStyles />} />
           <Route path="c/:col" element={<CollectionEditor />} />
           <Route path="c/:col/:id" element={<CollectionEditor />} />
           <Route path="users" element={<Users />} />

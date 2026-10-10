@@ -58,6 +58,12 @@ export const defaultSettings = {
     volume: 0.35,
     tracks: [] as { title: string; url: string }[],
   },
+  typography: {
+    heroScale: 1,
+    headingScale: 1,
+    bodyScale: 1,
+    headingLetterSpacing: 0.02,
+  },
   features: {
     transitions: true,
     cursor: true,

@@ -51,7 +51,7 @@ function Hero() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3 }} className="kicker red row" style={{ gap: 12 }}>
           <span className="pulse-dot" /> <SText path="hero.kicker" />
         </motion.div>
-        <motion.h1 initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 1.4, delay: 0.45, ease: [0.22, 1, 0.36, 1] }} className="display" style={{ fontSize: 'clamp(84px, 13vw, 240px)', lineHeight: 0.84, margin: '18px 0 0', maxWidth: 1500, letterSpacing: '.01em', textShadow: '0 10px 60px rgba(0,0,0,.6)' }}>
+        <motion.h1 initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 1.4, delay: 0.45, ease: [0.22, 1, 0.36, 1] }} className="display" style={{ fontSize: 'calc(var(--hs, 1) * clamp(60px, 8vw, 150px))', lineHeight: 0.88, margin: '18px 0 0', maxWidth: 1100, letterSpacing: '.01em', textShadow: '0 10px 60px rgba(0,0,0,.6)' }}>
           <SText path="hero.title" />
         </motion.h1>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.8 }}>

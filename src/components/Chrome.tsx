@@ -55,6 +55,11 @@ export function ThemeInjector() {
     r.setProperty('--f-serif', `${use('serif')}'${f.serif}', Georgia, serif`);
     r.setProperty('--f-mono', `'${f.mono}', ui-monospace, monospace`);
     r.setProperty('--f-type', `'${f.typewriter}', 'Courier New', monospace`);
+    const ty: any = (settings as any).typography || {};
+    r.setProperty('--ds', String(ty.headingScale ?? 1));
+    r.setProperty('--bs', String(ty.bodyScale ?? 1));
+    r.setProperty('--hs', String(ty.heroScale ?? 1));
+    r.setProperty('--hls', `${ty.headingLetterSpacing ?? 0.02}em`);
     document.title = settings.brand.siteName || 'DEXTER';
   }, [settings]);
   return null;
@@ -348,7 +353,7 @@ export function EditBar() {
       <span className="pulse-dot" style={{ background: 'var(--gold)' }} />
       <b style={{ fontSize: 13, letterSpacing: '.12em' }}>EDIT MODE</b>
       <span className="muted" style={{ fontSize: 12 }}>
-        Click any text with a dashed outline to edit it. Changes publish on blur.
+        Click a dashed text to edit it · hover and press 🎨 (or right-click) to resize, move, tilt and restyle it.
       </span>
       <label className="row" style={{ fontSize: 12, gap: 8 }}>
         <button className={cx('toggle', previewDrafts && 'on')} onClick={() => setPreviewDrafts(!previewDrafts)} /> Preview drafts

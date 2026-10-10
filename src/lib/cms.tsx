@@ -13,6 +13,8 @@ interface CmsCtx {
   raw: Raw;
   settings: typeof defaultSettings;
   strings: Record<string, string>;
+  styles: Record<string, any>;
+  saveStyle: (key: string, style: any | null) => Promise<void>;
   col: (name: string) => any[];
   item: (name: string, id: string) => any;
   editMode: boolean;
@@ -47,6 +49,7 @@ export function CmsProvider({ signedIn, isAdmin, uid, children }: { signedIn: bo
   const [siteDoc, setSiteDoc] = useState<any>(null);
   const [siteLoaded, setSiteLoaded] = useState(false);
   const [stringsDoc, setStringsDoc] = useState<any>({});
+  const [stylesDoc, setStylesDoc] = useState<Record<string, any>>({});
   const [editMode, setEditMode] = useState(false);
   const [previewDrafts, setPreviewDrafts] = useState(true);
 
@@ -65,9 +68,15 @@ export function CmsProvider({ signedIn, isAdmin, uid, children }: { signedIn: bo
       (s) => setStringsDoc(s.exists() ? s.data()?.map || {} : {}),
       () => {},
     );
+    const unsub3 = onSnapshot(
+      doc(db, 'settings', 'styles'),
+      (s) => setStylesDoc(s.exists() ? s.data()?.map || {} : {}),
+      () => {},
+    );
     return () => {
       unsub();
       unsub2();
+      unsub3();
     };
   }, []);
 
@@ -241,6 +250,18 @@ export function CmsProvider({ signedIn, isAdmin, uid, children }: { signedIn: bo
     }
   };
 
+  const saveStyle: CmsCtx['saveStyle'] = async (key, style) => {
+    try {
+      const map = { ...(stylesDoc || {}) };
+      if (style) map[key] = clean(style);
+      else delete map[key];
+      await setDoc(doc(db, 'settings', 'styles'), { map });
+      await logHistory('styles', key, stylesDoc?.[key] ?? null, style ? clean(style) : null, 'style');
+    } catch (e) {
+      fail(e);
+    }
+  };
+
   const isDefault = (colName: string, id: string) => !!(defaults[colName] || []).find((d) => d.id === id);
 
   /** Writes every built-in default into Firestore so the whole site lives in the database. */
@@ -270,6 +291,8 @@ export function CmsProvider({ signedIn, isAdmin, uid, children }: { signedIn: bo
     raw,
     settings,
     strings: stringsDoc || {},
+    styles: stylesDoc || {},
+    saveStyle,
     col,
     item,
     editMode: isAdmin && editMode,

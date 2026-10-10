@@ -33,7 +33,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--f-body);
-  font-size: 16px;
+  font-size: calc(16px * var(--bs, 1));
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -48,17 +48,17 @@ button { font: inherit; color: inherit; }
 ::-webkit-scrollbar-thumb:hover { background: var(--blood-dark); }
 
 /* ---------- typography ---------- */
-.display { font-family: var(--f-display); font-weight: 400; letter-spacing: 0.02em; line-height: 0.9; text-transform: uppercase; }
+.display { font-family: var(--f-display); font-weight: 400; letter-spacing: var(--hls, 0.02em); line-height: 0.9; text-transform: uppercase; }
 .serif { font-family: var(--f-serif); }
 .mono { font-family: var(--f-mono); }
 .type { font-family: var(--f-type); }
 .kicker { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--accent2); }
 .kicker.red { color: var(--blood-bright); }
 .muted { color: var(--muted); }
-.h-xl { font-size: clamp(64px, 11vw, 190px); }
-.h-lg { font-size: clamp(48px, 7vw, 120px); }
-.h-md { font-size: clamp(36px, 4.4vw, 72px); }
-.h-sm { font-size: clamp(26px, 2.6vw, 40px); }
+.h-xl { font-size: calc(var(--ds, 1) * clamp(64px, 11vw, 190px)); }
+.h-lg { font-size: calc(var(--ds, 1) * clamp(48px, 7vw, 120px)); }
+.h-md { font-size: calc(var(--ds, 1) * clamp(36px, 4.4vw, 72px)); }
+.h-sm { font-size: calc(var(--ds, 1) * clamp(26px, 2.6vw, 40px)); }
 .lead { font-size: clamp(17px, 1.35vw, 21px); color: #cfcac2; line-height: 1.7; max-width: 760px; }
 .quote-big { font-family: var(--f-serif); font-style: italic; font-size: clamp(30px, 3.6vw, 60px); line-height: 1.15; }
 .blood-text { color: var(--blood-bright); }
