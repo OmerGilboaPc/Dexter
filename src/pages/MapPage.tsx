@@ -36,7 +36,7 @@ export default function MapPage() {
   const [filter, setFilter] = useState('all');
   const [sel, setSel] = useState<any>(() => locs.find((l) => l.id === params.get('l')) || null);
   const list = useMemo(() => locs.filter((l) => filter === 'all' || l.series === filter), [locs, filter]);
-  const color = (sid: string) => { const t = series.find((s) => s.id === sid)?.theme; return t?.accent2 || t?.accent || '#c1121f'; };
+  const color = (sid: string) => { const t = series.find((s) => s.id === sid)?.theme; return t?.accent2 || t?.accent || '#d90f1e'; };
 
   return (
     <div style={{ height: '100vh', paddingTop: 'var(--nav-h)', display: 'grid', gridTemplateColumns: '420px 1fr' }}>
@@ -68,7 +68,7 @@ export default function MapPage() {
                   setSel(l);
                 }}
                 className="card hover"
-                style={{ marginBottom: 12, cursor: 'pointer', borderColor: active ? color(l.series) : undefined, background: active ? 'rgba(193,18,31,.08)' : undefined }}
+                style={{ marginBottom: 12, cursor: 'pointer', borderColor: active ? color(l.series) : undefined, background: active ? 'rgba(217,15,30,.08)' : undefined }}
               >
                 {active && l.image && (
                   <div style={{ height: 150, position: 'relative' }}>

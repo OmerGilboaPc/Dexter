@@ -23,8 +23,8 @@ export const defaultSettings = {
     surface: '#14141a',
     text: '#ece8e1',
     muted: '#8e8a84',
-    blood: '#c1121f',
-    bloodBright: '#ff2a36',
+    blood: '#d90f1e',
+    bloodBright: '#ff2e3b',
     gold: '#d9a441',
   },
   hero: {
@@ -94,6 +94,8 @@ export const defaultSettings = {
     { label: 'Harry’s Code', to: '/code', enabled: true, group: 'explore' },
     { label: 'Behind the Scenes', to: '/behind-the-scenes', enabled: true, group: 'explore' },
     { label: 'Trailer', to: '/trailer', enabled: true, group: 'explore' },
+    { label: 'The Books', to: '/books', enabled: true, group: 'explore' },
+    { label: 'Daily Challenge', to: '/daily', enabled: true, group: 'play' },
     { label: 'Trivia', to: '/games/trivia', enabled: true, group: 'play' },
     { label: 'Which Character Are You?', to: '/games/quiz', enabled: true, group: 'play' },
     { label: 'Blood Spatter Lab', to: '/games/blood-spatter', enabled: true, group: 'play' },
@@ -138,6 +140,11 @@ export const achievements = [
   { id: 'a-hour', order: 23, title: 'Can’t Stop', desc: 'Spend an hour on the site.', icon: '⏳', event: 'time:min', count: 60 },
   { id: 'a-five', order: 24, title: 'Five Hours Later', desc: 'Spend five hours on the site.', icon: '🕰️', event: 'time:min', count: 300 },
   { id: 'a-map', order: 25, title: 'Miami Metro Tour', desc: 'Visit the map.', icon: '📍', event: 'visit:map', count: 1 },
+  { id: 'a-daily', order: 26, title: 'Morning Routine', desc: 'Complete a daily challenge.', icon: '☕', event: 'daily:done', count: 1 },
+  { id: 'a-daily7', order: 27, title: 'Creature of Habit', desc: 'Keep a 7-day daily challenge streak.', icon: '🔥', event: 'daily:streak7', count: 1 },
+  { id: 'a-like', order: 28, title: 'Fan Mail', desc: 'Like 5 photos in the gallery.', icon: '❤️', event: 'photo:like', count: 5 },
+  { id: 'a-comment', order: 29, title: 'Critic’s Corner', desc: 'Comment on a gallery photo.', icon: '💬', event: 'photo:comment', count: 1 },
+  { id: 'a-books', order: 30, title: 'Read the Source', desc: 'Visit the books page.', icon: '📚', event: 'visit:books', count: 1 },
 ];
 
 export const eggs = [

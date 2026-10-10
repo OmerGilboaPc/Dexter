@@ -21,7 +21,7 @@ service cloud.firestore {
     function isContent(col) {
       return col in ['series', 'seasons', 'characters', 'villains', 'victims', 'quotes', 'timeline',
                      'locations', 'code', 'bts', 'trivia', 'quiz', 'cases', 'achievements', 'eggs',
-                     'pages', 'media'];
+                     'books', 'pages', 'media'];
     }
 
     // Global settings & UI texts: public read (the sign-in page needs them), admin write.
@@ -69,12 +69,21 @@ service cloud.firestore {
       allow delete: if isAdmin() || (verified() && resource.data.uid == request.auth.uid);
     }
 
-    // Photo Mode gallery.
+    // Photo Mode gallery (likes and comment counts can be updated by anyone signed in).
     match /photos/{docId} {
       allow read: if verified();
       allow create: if verified() && notBlocked() && request.resource.data.uid == request.auth.uid
         && request.resource.data.image is string && request.resource.data.image.size() < 1000000;
+      allow update: if verified() && notBlocked()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount']);
       allow delete: if isAdmin() || (verified() && resource.data.uid == request.auth.uid);
+
+      match /comments/{commentId} {
+        allow read: if verified();
+        allow create: if verified() && notBlocked() && request.resource.data.uid == request.auth.uid
+          && request.resource.data.text is string && request.resource.data.text.size() <= 500;
+        allow delete: if isAdmin() || (verified() && resource.data.uid == request.auth.uid);
+      }
     }
   }
 }

@@ -13,7 +13,7 @@ export function Loader({ label = 'Loading' }: { label?: string }) {
           </defs>
           <path d="M23 2 C23 2 4 28 4 41 a19 19 0 0 0 38 0 C42 28 23 2 23 2z" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="1.5" />
           <g clipPath="url(#dropclip)">
-            <rect x="0" width="46" height="64" fill="#c1121f">
+            <rect x="0" width="46" height="64" fill="#d90f1e">
               <animate attributeName="y" values="64;10;64" dur="2.4s" repeatCount="indefinite" />
             </rect>
           </g>

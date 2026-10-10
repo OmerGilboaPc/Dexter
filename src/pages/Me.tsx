@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, increment, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth, Profile as P } from '../lib/auth';
 import { useCms } from '../lib/cms';
@@ -11,7 +11,8 @@ import { Reveal } from '../components/Chrome';
 import { AvatarPicker, FavoritePicker } from './auth/Auth';
 import { cx, fmtMinutes, initials, timeAgo } from '../lib/util';
 import { toast } from '../lib/bus';
-import { music } from '../lib/sound';
+import { music, sfx } from '../lib/sound';
+import { Modal } from '../components/Modal';
 
 export function Avatar({ p, size = 38 }: { p: any; size?: number }) {
   return (
@@ -268,10 +269,12 @@ export function Settings() {
 export function Leaderboard() {
   const [scores, setScores] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
-  const [tab, setTab] = useState('trivia-dark');
+  const [tab, setTab] = useState('overall');
   useEffect(() => onSnapshot(collection(db, 'scores'), (s) => setScores(s.docs.map((d) => ({ id: d.id, ...d.data() }))), () => {}), []);
   useEffect(() => onSnapshot(collection(db, 'users'), (s) => setUsers(s.docs.map((d) => ({ uid: d.id, ...d.data() }))), () => {}), []);
   const tabs = [
+    ['overall', '🏆 Overall'],
+    ['daily', '🔥 Daily streak'],
     ['trivia-dark', 'Trivia · Dark Passenger'],
     ['trivia-medium', 'Trivia · Medium'],
     ['trivia-easy', 'Trivia · Easy'],
@@ -280,6 +283,20 @@ export function Leaderboard() {
     ['time', 'Time on site'],
   ];
   const rows = useMemo(() => {
+    if (tab === 'overall')
+      return users
+        .map((u) => {
+          const pts =
+            (Object.values(u.triviaBest || {}) as any[]).reduce((a: number, b: any) => a + (Number(b) || 0), 0) * 10 +
+            (u.spatterBest || 0) +
+            Object.keys(u.cases || {}).length * 50 +
+            Object.keys(u.achievements || {}).length * 25 +
+            (u.daily?.best || 0) * 15 +
+            Object.keys(u.eggs || {}).length * 20;
+          return { uid: u.uid, username: u.username, avatar: u.avatar, score: pts, label: `${pts} pts` };
+        })
+        .sort((a, b) => b.score - a.score);
+    if (tab === 'daily') return users.map((u) => ({ uid: u.uid, username: u.username, avatar: u.avatar, score: u.daily?.best || 0, label: `🔥 ${u.daily?.best || 0}` })).filter((r) => r.score > 0).sort((a, b) => b.score - a.score);
     if (tab === 'achievements') return users.map((u) => ({ uid: u.uid, username: u.username, avatar: u.avatar, score: Object.keys(u.achievements || {}).length })).sort((a, b) => b.score - a.score);
     if (tab === 'time') return users.map((u) => ({ uid: u.uid, username: u.username, avatar: u.avatar, score: u.totalMinutes || 0, label: fmtMinutes(u.totalMinutes || 0) })).sort((a, b) => b.score - a.score);
     const [game, level] = tab.split('-');
@@ -307,7 +324,7 @@ export function Leaderboard() {
         ) : (
           <div className="card">
             {rows.slice(0, 50).map((r, i) => (
-              <Link key={r.uid + i} to={`/profile/${r.uid}`} style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '16px 22px', borderBottom: '1px solid var(--line)', background: i < 3 ? `rgba(193,18,31,${0.14 - i * 0.04})` : undefined }}>
+              <Link key={r.uid + i} to={`/profile/${r.uid}`} style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '16px 22px', borderBottom: '1px solid var(--line)', background: i < 3 ? `rgba(217,15,30,${0.14 - i * 0.04})` : undefined }}>
                 <div className="display" style={{ fontSize: 40, width: 56, color: i === 0 ? 'var(--gold)' : i < 3 ? '#fff' : 'var(--muted)' }}>
                   {i + 1}
                 </div>
@@ -329,36 +346,52 @@ export function Leaderboard() {
 export function Gallery() {
   const { user, isAdmin } = useAuth();
   const [photos, setPhotos] = useState<any[]>([]);
-  const [lb, setLb] = useState<any>(null);
+  const [open, setOpen] = useState<string | null>(null);
+  const [sort, setSort] = useState<'new' | 'top'>('new');
   useEffect(() => onSnapshot(query(collection(db, 'photos'), orderBy('at', 'desc')), (s) => setPhotos(s.docs.map((d) => ({ id: d.id, ...d.data() }))), () => {}), []);
+  const list = sort === 'top' ? [...photos].sort((a, b) => Object.keys(b.likes || {}).length - Object.keys(a.likes || {}).length) : photos;
+  const current = photos.find((p) => p.id === open);
   return (
     <div className="page">
       <div className="container" style={{ paddingTop: 60 }}>
         <T k="gallery.kicker" d="Taken in Photo Mode" as="div" className="kicker red" />
         <T k="gallery.title" d="The Gallery" as="h1" className="display h-lg" style={{ margin: '12px 0 20px' }} />
-        <p className="lead muted">
-          Photos the community took in the Kill Room.{' '}
-          <Link to="/kill-room" style={{ color: 'var(--blood-bright)' }}>
-            Take your own →
-          </Link>
-        </p>
-        {photos.length === 0 ? (
+        <div className="row" style={{ justifyContent: 'space-between' }}>
+          <p className="lead muted" style={{ margin: 0 }}>
+            Photos the community took in the Kill Room.{' '}
+            <Link to="/kill-room" style={{ color: 'var(--blood-bright)' }}>
+              Take your own →
+            </Link>
+          </p>
+          <div className="tabs">
+            <button className={cx('tab', sort === 'new' && 'on')} onClick={() => setSort('new')}>
+              Newest
+            </button>
+            <button className={cx('tab', sort === 'top' && 'on')} onClick={() => setSort('top')}>
+              Most liked
+            </button>
+          </div>
+        </div>
+        {list.length === 0 ? (
           <div className="empty" style={{ marginTop: 40 }}>
-            No photos yet. Go into the Kill Room, press P, and share.
+            No photos yet. Go into the Kill Room, press C, and share.
           </div>
         ) : (
           <div style={{ columns: '3 340px', gap: 16, marginTop: 40 }}>
-            {photos.map((p) => (
+            {list.map((p) => (
               <motion.div key={p.id} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} style={{ breakInside: 'avoid', marginBottom: 16, position: 'relative' }} className="card">
-                <img src={p.image} alt="" onClick={() => setLb(p)} style={{ width: '100%', cursor: 'zoom-in' }} />
+                <img src={p.image} alt="" onClick={() => setOpen(p.id)} style={{ width: '100%', cursor: 'zoom-in' }} />
                 <div className="row" style={{ padding: '12px 14px', justifyContent: 'space-between' }}>
                   <Link to={`/profile/${p.uid}`} className="row" style={{ gap: 10 }}>
                     <Avatar p={p} size={28} />
                     <span style={{ fontSize: 14 }}>{p.username}</span>
                   </Link>
-                  <span className="mono muted" style={{ fontSize: 11 }}>
-                    {p.scene} · {timeAgo(p.at)}
-                  </span>
+                  <div className="row" style={{ gap: 8 }}>
+                    <LikeButton photo={p} />
+                    <button className="btn btn-xs" onClick={() => setOpen(p.id)}>
+                      💬 {p.commentCount || 0}
+                    </button>
+                  </div>
                 </div>
                 {(p.uid === user?.uid || isAdmin) && (
                   <button
@@ -377,13 +410,94 @@ export function Gallery() {
           </div>
         )}
       </div>
-      <AnimatePresence>
-        {lb && (
-          <motion.div className="modal-back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLb(null)}>
-            <img src={lb.image} alt="" style={{ maxWidth: '94vw', maxHeight: '90vh', borderRadius: 12 }} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Modal open={!!current} onClose={() => setOpen(null)} wide>
+        {current && <PhotoDetail p={current} />}
+      </Modal>
+    </div>
+  );
+}
+
+function LikeButton({ photo }: { photo: any }) {
+  const { user, track } = useAuth();
+  const liked = !!photo.likes?.[user?.uid || ''];
+  const n = Object.keys(photo.likes || {}).length;
+  return (
+    <button
+      className="btn btn-xs"
+      style={liked ? { background: 'var(--blood)', borderColor: 'var(--blood)', color: '#fff' } : undefined}
+      onClick={async () => {
+        if (!user) return;
+        if (!liked) {
+          sfx.drip();
+          track('photo:like');
+        }
+        await updateDoc(doc(db, 'photos', photo.id), { [`likes.${user.uid}`]: liked ? deleteField() : true }).catch(() => {});
+      }}
+    >
+      {liked ? '♥' : '♡'} {n}
+    </button>
+  );
+}
+
+function PhotoDetail({ p }: { p: any }) {
+  const { user, profile, isAdmin, track } = useAuth();
+  const [comments, setComments] = useState<any[]>([]);
+  const [text, setText] = useState('');
+  useEffect(() => onSnapshot(query(collection(db, 'photos', p.id, 'comments'), orderBy('at', 'asc')), (s) => setComments(s.docs.map((d) => ({ id: d.id, ...d.data() }))), () => {}), [p.id]);
+  const send = async () => {
+    const t = text.trim().slice(0, 500);
+    if (!t || !user) return;
+    setText('');
+    await addDoc(collection(db, 'photos', p.id, 'comments'), { uid: user.uid, username: profile?.username || '', avatar: profile?.avatar || '', text: t, at: serverTimestamp() });
+    await updateDoc(doc(db, 'photos', p.id), { commentCount: increment(1) }).catch(() => {});
+    track('photo:comment');
+  };
+  return (
+    <div className="grid" style={{ gridTemplateColumns: '1.6fr 1fr', gap: 24, alignItems: 'start' }}>
+      <img src={p.image} alt="" style={{ width: '100%', borderRadius: 12 }} />
+      <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '70vh' }}>
+        <div className="row" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
+          <Link to={`/profile/${p.uid}`} className="row" style={{ gap: 10 }}>
+            <Avatar p={p} size={34} />
+            <div>
+              <b>{p.username}</b>
+              <div className="muted mono" style={{ fontSize: 11 }}>
+                {p.scene} · {timeAgo(p.at)}
+              </div>
+            </div>
+          </Link>
+          <LikeButton photo={p} />
+        </div>
+        <div style={{ flex: 1, overflow: 'auto', borderTop: '1px solid var(--line)', paddingTop: 10 }}>
+          {comments.length === 0 && <p className="muted">No comments yet. Say something nice. Or don’t.</p>}
+          {comments.map((c) => (
+            <div key={c.id} className="row" style={{ alignItems: 'start', flexWrap: 'nowrap', gap: 10, padding: '8px 0' }}>
+              <Avatar p={c} size={28} />
+              <div style={{ flex: 1 }}>
+                <b style={{ fontSize: 13 }}>{c.username}</b> <span className="muted" style={{ fontSize: 11 }}>{timeAgo(c.at)}</span>
+                <div style={{ fontSize: 14 }}>{c.text}</div>
+              </div>
+              {(c.uid === user?.uid || isAdmin) && (
+                <button
+                  className="btn btn-xs"
+                  onClick={async () => {
+                    await deleteDoc(doc(db, 'photos', p.id, 'comments', c.id));
+                    await updateDoc(doc(db, 'photos', p.id), { commentCount: increment(-1) }).catch(() => {});
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="row" style={{ flexWrap: 'nowrap', marginTop: 10 }}>
+          <input className="input" placeholder="Add a comment…" value={text} maxLength={500} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} />
+          <button className="btn btn-primary btn-sm" onClick={send}>
+            Send
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

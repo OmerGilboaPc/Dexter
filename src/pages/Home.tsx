@@ -41,7 +41,7 @@ function Hero() {
   return (
     <section ref={ref} style={{ position: 'relative', height: '100vh', minHeight: 680, overflow: 'hidden' }}>
       <motion.div style={{ position: 'absolute', inset: 0, y, scale }}>
-        <Visual src={h.video || h.image} seed="hero-dexter" accent="#c1121f" mode="none" style={{ width: '100%', height: '100%' }} />
+        <Visual src={h.video || h.image} seed="hero-dexter" accent="#d90f1e" mode="none" style={{ width: '100%', height: '100%' }} />
       </motion.div>
       <WorldFX effect="heat" intensity={0.6} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(7,7,10,.5) 0%, rgba(7,7,10,.1) 35%, rgba(7,7,10,.6) 75%, var(--bg) 100%), linear-gradient(90deg, rgba(7,7,10,.8) 0%, rgba(7,7,10,0) 65%)' }} />
@@ -51,7 +51,7 @@ function Hero() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3 }} className="kicker red row" style={{ gap: 12 }}>
           <span className="pulse-dot" /> <SText path="hero.kicker" />
         </motion.div>
-        <motion.h1 initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 1.4, delay: 0.45, ease: [0.22, 1, 0.36, 1] }} className="serif" style={{ fontSize: 'clamp(56px, 9vw, 160px)', fontStyle: 'italic', fontWeight: 500, lineHeight: 0.95, margin: '18px 0 0', maxWidth: 1300, textShadow: '0 10px 60px rgba(0,0,0,.6)' }}>
+        <motion.h1 initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 1.4, delay: 0.45, ease: [0.22, 1, 0.36, 1] }} className="display" style={{ fontSize: 'clamp(84px, 13vw, 240px)', lineHeight: 0.84, margin: '18px 0 0', maxWidth: 1500, letterSpacing: '.01em', textShadow: '0 10px 60px rgba(0,0,0,.6)' }}>
           <SText path="hero.title" />
         </motion.h1>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.8 }}>
@@ -237,7 +237,7 @@ function QuoteOfDay() {
   if (!q) return null;
   return (
     <section className="section" style={{ textAlign: 'center', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(193,18,31,.14), transparent 65%)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(217,15,30,.14), transparent 65%)' }} />
       <div className="container" style={{ position: 'relative', maxWidth: 1200 }}>
         <Reveal>
           <T k="home.quote.kicker" d="Quote of the day" as="div" className="kicker red" />

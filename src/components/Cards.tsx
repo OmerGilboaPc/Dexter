@@ -37,10 +37,10 @@ export function CharacterCard({ c, size = 'md' }: { c: any; size?: 'md' | 'lg' }
     <Tilt>
       <Link to={`/characters/${c.id}`} className="media-card portrait-ratio" style={{ display: 'block', boxShadow: '0 30px 60px -30px rgba(0,0,0,.9)' }} onMouseEnter={() => sfx.hover()}>
         <div className="media">
-          <Visual src={c.portrait || c.heroImage} seed={c.id} label={c.name} accent={c.color || '#c1121f'} position="center top" />
+          <Visual src={c.portrait || c.heroImage} seed={c.id} label={c.name} accent={c.color || '#d90f1e'} position="center top" />
         </div>
         <div className="shade" />
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, transparent 50%, ${c.color || '#c1121f'}33 100%)`, zIndex: 1, mixBlendMode: 'screen' }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, transparent 50%, ${c.color || '#d90f1e'}33 100%)`, zIndex: 1, mixBlendMode: 'screen' }} />
         <div className="meta">
           <div className="mono" style={{ fontSize: 10, letterSpacing: '.25em', color: c.color || 'var(--gold)', textTransform: 'uppercase' }}>
             {c.actor}

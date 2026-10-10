@@ -41,7 +41,7 @@ export default function Quiz() {
     return (
       <div className="page">
         <div className="container grid" style={{ paddingTop: 50, gridTemplateColumns: '1fr 1.2fr', gap: 60, alignItems: 'center' }}>
-          <motion.div initial={{ opacity: 0, rotateY: 30 }} animate={{ opacity: 1, rotateY: 0 }} transition={{ duration: 1.2 }} className="media-card portrait-ratio" style={{ boxShadow: `0 50px 120px -30px ${c?.color || '#c1121f'}88` }}>
+          <motion.div initial={{ opacity: 0, rotateY: 30 }} animate={{ opacity: 1, rotateY: 0 }} transition={{ duration: 1.2 }} className="media-card portrait-ratio" style={{ boxShadow: `0 50px 120px -30px ${c?.color || '#d90f1e'}88` }}>
             <Visual src={c?.portrait || c?.heroImage} seed={result} label={c?.name} accent={c?.color} style={{ position: 'absolute', inset: 0 }} position="center top" />
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 1 }}>

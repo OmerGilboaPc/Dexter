@@ -113,7 +113,7 @@ export function SearchPalette({ open, onClose }: { open: boolean; onClose: () =>
                     key={h.type + h.to + i}
                     onMouseEnter={() => setSel(i)}
                     onClick={() => go(h)}
-                    style={{ display: 'flex', width: '100%', gap: 14, alignItems: 'center', textAlign: 'left', padding: '12px 14px', borderRadius: 12, border: 'none', cursor: 'pointer', background: i === sel ? 'rgba(193,18,31,.16)' : 'transparent' }}
+                    style={{ display: 'flex', width: '100%', gap: 14, alignItems: 'center', textAlign: 'left', padding: '12px 14px', borderRadius: 12, border: 'none', cursor: 'pointer', background: i === sel ? 'rgba(217,15,30,.16)' : 'transparent' }}
                   >
                     <span className="badge" style={{ minWidth: 86, justifyContent: 'center' }}>
                       {h.type}

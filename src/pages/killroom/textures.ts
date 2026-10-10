@@ -186,3 +186,117 @@ export const loadImageTexture = (url: string) => {
   cache.set(url, t);
   return t;
 };
+
+export const logTex = () =>
+  canvasTex(
+    'logs',
+    512,
+    512,
+    (ctx, w, h) => {
+      const rows = 8;
+      for (let i = 0; i < rows; i++) {
+        const y = (i * h) / rows;
+        const g = ctx.createLinearGradient(0, y, 0, y + h / rows);
+        const v = 70 + Math.random() * 25;
+        g.addColorStop(0, `rgb(${v * 0.55},${v * 0.36},${v * 0.2})`);
+        g.addColorStop(0.5, `rgb(${v * 1.05},${v * 0.72},${v * 0.44})`);
+        g.addColorStop(1, `rgb(${v * 0.4},${v * 0.25},${v * 0.13})`);
+        ctx.fillStyle = g;
+        ctx.fillRect(0, y, w, h / rows);
+      }
+      noise(ctx, w, h, 26);
+    },
+    [2, 1.2],
+  );
+
+export const marbleTex = () =>
+  canvasTex(
+    'marble',
+    1024,
+    1024,
+    (ctx, w, h) => {
+      ctx.fillStyle = '#0d0d0f';
+      ctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 40; i++) {
+        ctx.strokeStyle = `rgba(${200 + Math.random() * 40},${180 + Math.random() * 30},${140},${0.05 + Math.random() * 0.12})`;
+        ctx.lineWidth = 0.5 + Math.random() * 2;
+        ctx.beginPath();
+        let x = Math.random() * w;
+        let y = Math.random() * h;
+        ctx.moveTo(x, y);
+        for (let k = 0; k < 12; k++) {
+          x += (Math.random() - 0.3) * 120;
+          y += (Math.random() - 0.5) * 120;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      noise(ctx, w, h, 8);
+    },
+    [3, 3],
+  );
+
+export const rustTex = () =>
+  canvasTex(
+    'rust',
+    256,
+    256,
+    (ctx, w, h) => {
+      const g = ctx.createLinearGradient(0, 0, w, 0);
+      for (let i = 0; i <= 8; i++) g.addColorStop(i / 8, i % 2 ? '#5a2a17' : '#7a3d22');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 80; i++) {
+        ctx.fillStyle = `rgba(${20 + Math.random() * 40},${10},${5},${Math.random() * 0.35})`;
+        ctx.beginPath();
+        ctx.arc(Math.random() * w, Math.random() * h, 2 + Math.random() * 14, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      noise(ctx, w, h, 30);
+    },
+    [10, 2],
+  );
+
+export const cityNightTex = () =>
+  canvasTex('city', 1024, 512, (ctx, w, h) => {
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, '#05070f');
+    g.addColorStop(0.6, '#141a33');
+    g.addColorStop(1, '#3a1e2a');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < 70; i++) {
+      const bw = 20 + Math.random() * 60;
+      const bh = 60 + Math.random() * 300;
+      const x = Math.random() * w;
+      ctx.fillStyle = '#05060a';
+      ctx.fillRect(x, h - bh, bw, bh);
+      for (let k = 0; k < bh / 10; k++)
+        for (let j = 0; j < bw / 8; j++)
+          if (Math.random() < 0.18) {
+            ctx.fillStyle = Math.random() < 0.7 ? 'rgba(255,214,140,.85)' : 'rgba(150,210,255,.8)';
+            ctx.fillRect(x + 3 + j * 8, h - bh + 6 + k * 10, 3, 4);
+          }
+    }
+  });
+
+export const snowWindowTex = () =>
+  canvasTex('snowwin', 512, 512, (ctx, w, h) => {
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, '#1b2a3c');
+    g.addColorStop(1, '#c9d9e6');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#0d1620';
+    for (let i = 0; i < 14; i++) {
+      const x = Math.random() * w;
+      const th = 150 + Math.random() * 200;
+      ctx.beginPath();
+      ctx.moveTo(x, h - th);
+      ctx.lineTo(x - 30, h);
+      ctx.lineTo(x + 30, h);
+      ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    for (let i = 0; i < 300; i++) ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+  });

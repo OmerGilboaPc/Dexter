@@ -30,7 +30,7 @@ export default function Admin() {
       <style>{`
         .admin-link{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;color:#bdb8b0;font-size:14px;transition:all .2s}
         .admin-link:hover{background:rgba(255,255,255,.05);color:#fff}
-        .admin-link.on{background:rgba(193,18,31,.18);color:#fff;box-shadow:inset 2px 0 0 var(--blood-bright)}
+        .admin-link.on{background:rgba(217,15,30,.18);color:#fff;box-shadow:inset 2px 0 0 var(--blood-bright)}
         .admin-h{font-family:var(--f-mono);font-size:10px;letter-spacing:.3em;color:var(--muted);margin:22px 12px 8px;text-transform:uppercase}
       `}</style>
       <aside style={{ borderRight: '1px solid var(--line)', background: 'var(--bg2)', padding: '22px 14px', position: 'sticky', top: 0, height: '100vh', overflow: 'auto' }}>
@@ -144,6 +144,22 @@ function Dashboard() {
     });
     return days;
   }, [users, now]);
+  const [lastVisit] = useState(() => {
+    try {
+      return Number(localStorage.getItem('dexter-admin-last') || 0);
+    } catch {
+      return 0;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('dexter-admin-last', String(Date.now()));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const newUsers = users.filter((u) => (toDate(u.createdAt)?.getTime() || 0) > lastVisit);
+  const [notif, setNotif] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'denied');
   const maxPage = Math.max(1, ...pages.map((p) => p[1]));
   const maxSign = Math.max(1, ...signups.map((d) => d.n));
   const seeded = Object.keys(raw).some((k) => Object.keys(raw[k] || {}).length > 0);
@@ -160,7 +176,19 @@ function Dashboard() {
 
   return (
     <div>
-      <AdminTitle kicker="Control room" title="Dashboard" />
+      <AdminTitle kicker="Control room" title="Dashboard">
+        {notif !== 'granted' && typeof Notification !== 'undefined' && (
+          <button className="btn btn-sm" onClick={async () => setNotif(await Notification.requestPermission())}>
+            🔔 Enable sign-up notifications
+          </button>
+        )}
+      </AdminTitle>
+      {lastVisit > 0 && newUsers.length > 0 && (
+        <div className="card card-pad" style={{ marginBottom: 20, borderColor: 'rgba(217,15,30,.45)', background: 'rgba(217,15,30,.08)' }}>
+          <b>🩸 {newUsers.length} new {newUsers.length === 1 ? 'user' : 'users'} since your last visit:</b>{' '}
+          {newUsers.map((u) => u.username).join(', ')}
+        </div>
+      )}
       <div className="grid g4" style={{ marginBottom: 24 }}>
         {[
           [users.length, 'Users'],

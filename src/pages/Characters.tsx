@@ -280,7 +280,7 @@ function Fate({ c, accent }: { c: any; accent: string }) {
 }
 
 function StandardPage({ c, mind }: { c: any; mind?: boolean }) {
-  const accent = c.color || '#c1121f';
+  const accent = c.color || '#d90f1e';
   return (
     <div>
       <CharHero c={c} accent={accent} fx={mind ? 'embers' : undefined} />

@@ -1,7 +1,6 @@
 import React, { Suspense, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useGLTF } from '@react-three/drei';
-import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { RiggedCharacter, DEFAULT_MODEL, Skin } from './Rigged';
 
 export const JOINTS = ['hips', 'spine', 'chest', 'neck', 'head', 'lShoulder', 'lElbow', 'lWrist', 'rShoulder', 'rElbow', 'rWrist', 'lHip', 'lKnee', 'lAnkle', 'rHip', 'rKnee', 'rAnkle'] as const;
 export const JOINT_LABELS: Record<string, string> = {
@@ -17,7 +16,7 @@ export type Pose = Record<string, [number, number, number]>; // degrees
 export const POSES: Record<string, Record<string, { label: string; pose: Pose }>> = {
   dexter: {
     stand: { label: 'Standing', pose: { lShoulder: [0, 0, 7], rShoulder: [0, 0, -7], lElbow: [-12, 0, 0], rElbow: [-12, 0, 0] } },
-    knife: { label: 'Knife raised', pose: { spine: [6, 0, 0], head: [16, 0, 0], rShoulder: [-155, 0, -12], rElbow: [-45, 0, 0], rWrist: [-25, 0, 0], lShoulder: [-35, 0, 14], lElbow: [-55, 0, 0], lHip: [-8, 0, 0], rHip: [6, 0, 0], lKnee: [10, 0, 0] } },
+    knife: { label: 'Knife raised', pose: { spine: [6, 0, 0], head: [16, 0, 0], rShoulder: [-150, 0, -30], rElbow: [-45, 0, 0], rWrist: [-25, 0, 0], lShoulder: [-35, 0, 14], lElbow: [-55, 0, 0], lHip: [-8, 0, 0], rHip: [6, 0, 0], lKnee: [10, 0, 0] } },
     lean: { label: 'Leaning over the table', pose: { spine: [24, 0, 0], chest: [14, 0, 0], head: [18, 0, 0], lShoulder: [-58, 0, 10], rShoulder: [-58, 0, -10], lElbow: [-28, 0, 0], rElbow: [-28, 0, 0], lHip: [-6, 0, 0], rHip: [-6, 0, 0], lKnee: [8, 0, 0], rKnee: [8, 0, 0] } },
     crossed: { label: 'Arms crossed', pose: { lShoulder: [-18, 28, 14], lElbow: [-108, 0, 0], rShoulder: [-18, -28, -14], rElbow: [-108, 0, 0], head: [-4, -12, 0] } },
     examine: { label: 'Examining a slide', pose: { rShoulder: [-62, -10, -8], rElbow: [-112, 0, 0], rWrist: [10, 0, 0], head: [8, -10, 0], lShoulder: [0, 0, 7], lElbow: [-10, 0, 0] } },
@@ -86,14 +85,29 @@ type Props = {
   onJoints?: (names: string[]) => void;
 };
 
-export function Character(props: Props) {
-  if (props.modelUrl)
-    return (
-      <Suspense fallback={<Mannequin {...props} />}>
-        <GLBCharacter {...props} />
-      </Suspense>
-    );
-  return <Mannequin {...props} />;
+export function Character(props: Props & { skin: Skin; breathing?: boolean; breathRate?: number; procedural?: boolean }) {
+  if (props.procedural) return <Mannequin {...props} />;
+  const url = props.modelUrl || DEFAULT_MODEL;
+  return (
+    <Suspense fallback={<Mannequin {...props} />}>
+      <RiggedCharacter
+        key={url}
+        url={url}
+        pose={props.pose}
+        skin={props.skin}
+        position={props.position}
+        rotation={props.rotation}
+        wrapped={props.wrapped}
+        knife={props.knife}
+        slide={props.slide}
+        selected={props.selected}
+        breathing={props.breathing}
+        breathRate={props.breathRate}
+        onSelect={props.onSelect}
+        onJoints={props.onJoints}
+      />
+    </Suspense>
+  );
 }
 
 export function Mannequin({ outfit, pose, position = [0, 0, 0], rotation = [0, 0, 0], wrapped, knife, apron, slide, selected, onSelect, onJoints }: Props) {
@@ -245,57 +259,3 @@ export function Mannequin({ outfit, pose, position = [0, 0, 0], rotation = [0, 0
   );
 }
 
-/** A custom GLB (uploaded through the Admin Panel). Bones can be posed in Photo Mode. */
-function GLBCharacter({ modelUrl, pose, position = [0, 0, 0], rotation = [0, 0, 0], onSelect, onJoints }: Props) {
-  const { scene } = useGLTF(modelUrl!);
-  const { obj, bones, rest } = useMemo(() => {
-    const obj = skeletonClone(scene) as THREE.Object3D;
-    obj.traverse((o: any) => {
-      if (o.isMesh) {
-        o.castShadow = true;
-        o.receiveShadow = true;
-      }
-    });
-    const box = new THREE.Box3().setFromObject(obj);
-    const size = box.getSize(new THREE.Vector3());
-    const s = 1.8 / Math.max(0.001, size.y);
-    obj.scale.setScalar(s);
-    obj.position.y = -box.min.y * s;
-    const bones: Record<string, THREE.Object3D> = {};
-    const rest: Record<string, THREE.Euler> = {};
-    obj.traverse((o: any) => {
-      if (o.isBone) {
-        bones[o.name] = o;
-        rest[o.name] = o.rotation.clone();
-      }
-    });
-    return { obj, bones, rest };
-  }, [scene]);
-
-  useEffect(() => {
-    onJoints?.(Object.keys(bones));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bones]);
-
-  useLayoutEffect(() => {
-    for (const [name, b] of Object.entries(bones)) {
-      const base = rest[name];
-      const v = pose[name] || [0, 0, 0];
-      b.rotation.set(base.x + toRad(v[0]), base.y + toRad(v[1]), base.z + toRad(v[2]));
-    }
-  }, [pose, bones, rest]);
-
-  return (
-    <group
-      position={position}
-      rotation={rotation}
-      onPointerDown={(e) => {
-        if (!onSelect) return;
-        e.stopPropagation();
-        onSelect();
-      }}
-    >
-      <primitive object={obj} />
-    </group>
-  );
-}

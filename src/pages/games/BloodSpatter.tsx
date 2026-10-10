@@ -131,7 +131,7 @@ export default function BloodSpatter() {
     const ctx = canvas.current!.getContext('2d')!;
     drawScene(ctx, scene, luminol);
     if (revealed) {
-      ctx.strokeStyle = luminol ? 'rgba(255,255,255,.35)' : 'rgba(193,18,31,.45)';
+      ctx.strokeStyle = luminol ? 'rgba(255,255,255,.35)' : 'rgba(217,15,30,.45)';
       ctx.lineWidth = 1;
       const sample = scene.pattern === 'castoff' ? scene.drops : scene.drops.filter((_, k) => k % Math.ceil(scene.drops.length / 26) === 0);
       for (const d of sample) {

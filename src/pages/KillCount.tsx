@@ -296,7 +296,7 @@ export default function KillCount() {
             <fog attach="fog" args={['#070606', 8, 18]} />
             <ambientLight intensity={0.25} />
             <spotLight position={[0, 6, 2]} angle={0.7} penumbra={0.6} intensity={60} castShadow shadow-mapSize={[2048, 2048]} color="#fff1dc" />
-            <pointLight position={[-4, 2, 3]} intensity={6} color="#c1121f" distance={12} />
+            <pointLight position={[-4, 2, 3]} intensity={6} color="#d90f1e" distance={12} />
             <pointLight position={[4, 2, -2]} intensity={3} color="#7cc4ff" distance={12} />
             <Suspense fallback={null}>
               <SlideBox list={pool} activeIds={active} selectedId={sel?.id || null} onSelect={select} hiddenIds={hidden} />
@@ -331,7 +331,7 @@ export default function KillCount() {
               </button>
               <Spoiler marker={{ series: sel.series, season: sel.season, episode: sel.episode }}>
                 <div style={{ height: 220, position: 'relative' }}>
-                  <Visual src={sel.image} seed={sel.id} label={sel.name} accent={sel.killer === 'brian' ? '#2a6fb0' : '#c1121f'} mode="name" style={{ position: 'absolute', inset: 0 }} />
+                  <Visual src={sel.image} seed={sel.id} label={sel.name} accent={sel.killer === 'brian' ? '#2a6fb0' : '#d90f1e'} mode="name" style={{ position: 'absolute', inset: 0 }} />
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 40%, rgba(12,12,16,.95))' }} />
                   <ItemMediaEdit col="victims" item={sel} path="image" style={{ top: 12, left: 12, right: 'auto' }} />
                   <div className="mono" style={{ position: 'absolute', left: 22, bottom: 16, fontSize: 12, letterSpacing: '.25em', color: sel.killer === 'brian' ? '#7cc4ff' : 'var(--blood-bright)' }}>

@@ -11,15 +11,20 @@ import { useCms } from '../../lib/cms';
 import { useAuth } from '../../lib/auth';
 import { Character, POSES, JOINTS, JOINT_LABELS, Pose, Outfit } from './Mannequin';
 import { KillRoomScene, BoatScene, TruckScene } from './Scenes';
+import { ApartmentScene, ContainerScene, CabinScene, VaultScene, SceneProps, defaultProps, PropsState } from './Scenes2';
 import { sfx } from '../../lib/sound';
 import { toast } from '../../lib/bus';
 import { cx } from '../../lib/util';
 
-type SceneId = 'killroom' | 'boat' | 'truck';
+type SceneId = 'killroom' | 'boat' | 'truck' | 'apartment' | 'container' | 'cabin' | 'vault';
 const SCENES: { id: SceneId; name: string; sub: string }[] = [
   { id: 'killroom', name: 'The Kill Room', sub: 'Plastic sheeting · an abandoned warehouse' },
   { id: 'boat', name: 'Slice of Life', sub: 'The Gulf Stream · 2:00 AM' },
   { id: 'truck', name: 'The Ice Truck', sub: 'Refrigerated · −18°C' },
+  { id: 'apartment', name: 'The Apartment', sub: 'Miami · behind the A/C unit' },
+  { id: 'container', name: 'The Container', sub: 'Port of Miami · where it began' },
+  { id: 'cabin', name: 'Iron Lake Cabin', sub: 'New Blood · −12°C outside' },
+  { id: 'vault', name: 'Prater’s Vault', sub: 'New York · the collection' },
 ];
 
 const FILTERS: Record<string, { label: string; hue: number; sat: number; bri: number; con: number; sepia: number; chroma: number; grain: number }> = {
@@ -35,6 +40,11 @@ const FILTERS: Record<string, { label: string; hue: number; sat: number; bri: nu
 const OUTFITS: Record<string, Outfit> = {
   dexter: { shirt: '#4a4f2c', pants: '#6b5a44', skin: '#d7ad91', gloves: '#16181a', shoes: '#2a1f17', hair: '#2b1c12' },
   brian: { shirt: '#8a9096', pants: '#2c3036', skin: '#e2c2ad', gloves: '#e2c2ad', shoes: '#141414', hair: '#3b2a1e' },
+};
+
+const SKINS = {
+  dexter: { body: '#7a8656', joints: '#1a1a1a' },
+  brian: { body: '#cfd9df', joints: '#5d6a74' },
 };
 
 type CharState = { visible: boolean; position: [number, number, number]; rotY: number; pose: Pose; preset: string; knife?: boolean; apron?: boolean; slide?: boolean; wrapped?: boolean };
@@ -147,7 +157,7 @@ export default function KillRoom() {
   const { user, profile, track } = useAuth();
   const [scene, setScene] = useState<SceneId>((settings.killRoom?.defaultScene as SceneId) || 'killroom');
   const [panel, setPanel] = useState(true);
-  const [tab, setTab] = useState<'camera' | 'effects' | 'light' | 'characters' | 'pose'>('camera');
+  const [tab, setTab] = useState<'camera' | 'effects' | 'light' | 'characters' | 'pose' | 'props'>('camera');
   const [hideUI, setHideUI] = useState(false);
   const [fx, setFx] = useState(initialFx);
   const [light, setLight] = useState(initialLight);
@@ -156,6 +166,8 @@ export default function KillRoom() {
   const [joint, setJoint] = useState<string>('rShoulder');
   const [jointNames, setJointNames] = useState<Record<string, string[]>>({ dexter: [...JOINTS], brian: [...JOINTS] });
   const [resetKey, setResetKey] = useState(0);
+  const [breathing, setBreathing] = useState(true);
+  const [props, setProps] = useState<PropsState>(defaultProps);
   const [shot, setShot] = useState<string | null>(null);
   const [flash, setFlash] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -277,6 +289,8 @@ export default function KillRoom() {
       {chars.dexter.visible && (
         <Character
           outfit={OUTFITS.dexter}
+          skin={SKINS.dexter}
+          breathing={breathing}
           pose={chars.dexter.pose}
           position={chars.dexter.position}
           rotation={[0, chars.dexter.rotY, 0]}
@@ -295,6 +309,9 @@ export default function KillRoom() {
       {chars.brian.visible && (
         <Character
           outfit={OUTFITS.brian}
+          skin={SKINS.brian}
+          breathing={breathing}
+          breathRate={1.8}
           pose={chars.brian.pose}
           position={chars.brian.position}
           rotation={[-Math.PI / 2, 0, chars.brian.rotY]}
@@ -340,6 +357,11 @@ export default function KillRoom() {
               <TruckScene {...sceneProps}>{characters}</TruckScene>
             </>
           )}
+          {scene === 'apartment' && <ApartmentScene {...sceneProps}>{characters}</ApartmentScene>}
+          {scene === 'container' && <ContainerScene {...sceneProps}>{characters}</ContainerScene>}
+          {scene === 'cabin' && <CabinScene {...sceneProps}>{characters}</CabinScene>}
+          {scene === 'vault' && <VaultScene {...sceneProps}>{characters}</VaultScene>}
+          {scene !== 'boat' && <SceneProps p={props} />}
           <ContactShadows position={[0, 0.003, 0]} opacity={0.55} scale={8} blur={2.2} far={2} />
         </Suspense>
         <OrbitControls makeDefault target={[0, 0.95, 0]} minDistance={0.3} maxDistance={scene === 'boat' ? 20 : 6} maxPolarAngle={Math.PI * 0.95} enableDamping dampingFactor={0.08} />
@@ -365,7 +387,7 @@ export default function KillRoom() {
               <div className="muted" style={{ fontSize: 12 }}>
                 {SCENES.find((s) => s.id === scene)?.sub}
               </div>
-              <div className="row" style={{ gap: 6, marginTop: 12 }}>
+              <div className="row" style={{ gap: 6, marginTop: 12, maxWidth: 360 }}>
                 {SCENES.map((s) => (
                   <button
                     key={s.id}
@@ -416,6 +438,7 @@ export default function KillRoom() {
                       ['light', '💡 Light'],
                       ['characters', '🧍 Characters'],
                       ['pose', '🦴 Pose'],
+                      ['props', '🧰 Props'],
                     ] as const
                   ).map(([k, l]) => (
                     <button key={k} className={cx('tab', tab === k && 'on')} style={{ padding: '7px 10px', fontSize: 12 }} onClick={() => setTab(k)}>
@@ -529,10 +552,28 @@ export default function KillRoom() {
                           <Slider label="Rotation" value={Math.round((chars[id].rotY * 180) / Math.PI)} min={-180} max={180} step={1} unit="°" onChange={(v) => setChar(id, { rotY: (v * Math.PI) / 180 })} />
                         </div>
                       ))}
+                      <Toggle label="Breathing" value={breathing} onChange={setBreathing} />
                       <button className="btn btn-sm" onClick={() => setChars(initialChars())}>
                         ↺ Reset characters
                       </button>
                       {(models.dexter || models.brian) && <p className="muted" style={{ fontSize: 12 }}>Custom 3D models are loaded from the Admin Panel.</p>}
+                    </>
+                  )}
+                  {tab === 'props' && (
+                    <>
+                      {(
+                        [
+                          ['evidence', 'Evidence table'],
+                          ['slideBox', 'Open slide box'],
+                          ['doll', 'Ice Truck doll parts'],
+                          ['bags', 'Trash bags'],
+                          ['blood', 'Pool of blood'],
+                          ['plastic', 'Extra plastic sheets'],
+                        ] as const
+                      ).map(([k, l]) => (
+                        <Toggle key={k} label={l} value={props[k]} onChange={(v) => setProps((x) => ({ ...x, [k]: v }))} />
+                      ))}
+                      {scene === 'boat' && <p className="muted" style={{ fontSize: 12 }}>Props are hidden on the boat.</p>}
                     </>
                   )}
                   {tab === 'pose' && (

@@ -33,7 +33,7 @@ export function Quotes() {
   return (
     <div className="page">
       <section style={{ position: 'relative', padding: '90px 0 70px', textAlign: 'center', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(193,18,31,.18), transparent 60%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(217,15,30,.18), transparent 60%)' }} />
         <div className="container" style={{ position: 'relative', maxWidth: 1100 }}>
           <T k="quotes.kicker" d="In his own words" as="div" className="kicker red" />
           {rand && (
@@ -111,7 +111,7 @@ export function Timeline() {
         <T k="timeline.title" d="Timeline" as="h1" className="display h-lg" style={{ margin: '12px 0 20px' }} />
         <T k="timeline.sub" d="From the shipping container to New York, in order. Spoilers stay blurred according to your viewing progress." as="p" className="lead muted" />
         <div style={{ position: 'relative', marginTop: 80 }}>
-          <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, marginLeft: -1, background: 'linear-gradient(var(--blood), rgba(193,18,31,.1))' }} />
+          <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, marginLeft: -1, background: 'linear-gradient(var(--blood), rgba(217,15,30,.1))' }} />
           {items.map((t, i) => {
             const s = series.find((x) => x.id === t.series);
             const left = i % 2 === 0;
@@ -119,7 +119,7 @@ export function Timeline() {
               <div key={t.id} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr', alignItems: 'center', marginBottom: 50 }}>
                 <div style={{ gridColumn: left ? 1 : 3, gridRow: 1 }}>
                   <Reveal y={30}>
-                    <div className="card" style={{ overflow: 'hidden', borderColor: `${s?.theme?.accent || '#c1121f'}33` }}>
+                    <div className="card" style={{ overflow: 'hidden', borderColor: `${s?.theme?.accent || '#d90f1e'}33` }}>
                       {t.image && (
                         <div style={{ height: 180, position: 'relative' }}>
                           <Visual src={t.image} seed={t.id} style={{ position: 'absolute', inset: 0 }} />
@@ -242,7 +242,7 @@ export function Trailer() {
             <SText path="trailer.description" as="p" className="lead muted" />
           </div>
         </div>
-        <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: 18, overflow: 'hidden', background: '#050505', boxShadow: '0 60px 140px -40px rgba(193,18,31,.45)', border: '1px solid var(--line)' }}>
+        <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: 18, overflow: 'hidden', background: '#050505', boxShadow: '0 60px 140px -40px rgba(217,15,30,.45)', border: '1px solid var(--line)' }}>
           <SettingsMediaEdit path="trailer.url" kind="video" label="Trailer" style={{ right: 150 }} />
           <SettingsMediaEdit path="trailer.poster" label="Poster" />
           {tr.url && playing ? (
@@ -272,7 +272,7 @@ export function Trailer() {
               <Visual src={tr.poster} seed="trailer-poster" label="DEXTER" mode="name" style={{ position: 'absolute', inset: 0 }} />
               <WorldFX effect="heat" intensity={0.5} />
               <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle, rgba(0,0,0,.1), rgba(0,0,0,.7))' }} />
-              <motion.div whileHover={{ scale: 1.08 }} style={{ position: 'absolute', left: '50%', top: '50%', width: 120, height: 120, marginLeft: -60, marginTop: -60, borderRadius: '50%', background: 'var(--blood)', display: 'grid', placeItems: 'center', boxShadow: '0 0 0 14px rgba(193,18,31,.25), 0 0 80px rgba(255,42,54,.6)' }}>
+              <motion.div whileHover={{ scale: 1.08 }} style={{ position: 'absolute', left: '50%', top: '50%', width: 120, height: 120, marginLeft: -60, marginTop: -60, borderRadius: '50%', background: 'var(--blood)', display: 'grid', placeItems: 'center', boxShadow: '0 0 0 14px rgba(217,15,30,.25), 0 0 80px rgba(255,42,54,.6)' }}>
                 <span style={{ fontSize: 40, marginLeft: 8, color: '#fff' }}>▶</span>
               </motion.div>
             </button>

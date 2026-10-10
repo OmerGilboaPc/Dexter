@@ -1,69 +1,39 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { sfx } from '../lib/sound';
 
-const INTERACTIVE = 'a, button, [role="button"], .chip, .card.hover, input[type="range"], select, label, .slide-hit';
+const enc = (svg: string) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 
-/** Custom cursor: a blood-red dot with a trailing ring that turns into a blade over interactive elements. */
+// Classic arrow shape, so it feels familiar and precise (hotspot at the tip).
+const arrow = (fill: string, stroke: string, drop: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="30" viewBox="0 0 26 30"><path d="M3 2 L3 22 L8.2 17.4 L11.6 25.6 L15 24.1 L11.7 16.1 L18.6 16.1 Z" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/><path d="M21 19 C21 19 18 23.2 18 25 a3 3 0 0 0 6 0 C24 23.2 21 19 21 19Z" fill="${drop}"/></svg>`;
+
+const DEFAULT = enc(arrow('#f4f1ec', '#0b0b0d', '#e0141f'));
+const POINTER = enc(arrow('#e0141f', '#fff3f3', '#ffffff'));
+
+/** Custom system cursor: a sharp arrow with a blood drop. Native, lag-free, and turns red over anything clickable. */
 export function Cursor() {
-  const dot = useRef<HTMLDivElement>(null);
-  const ring = useRef<HTMLDivElement>(null);
-  const [hover, setHover] = useState(false);
-  const [down, setDown] = useState(false);
-  const [visible, setVisible] = useState(false);
-
   useEffect(() => {
     if (window.matchMedia('(pointer: coarse)').matches) return;
-    document.body.classList.add('custom-cursor');
-    let mx = -100,
-      my = -100,
-      rx = -100,
-      ry = -100,
-      raf = 0;
-    const move = (e: PointerEvent) => {
-      mx = e.clientX;
-      my = e.clientY;
-      setVisible(true);
-      if (dot.current) dot.current.style.transform = `translate(${mx}px, ${my}px)`;
-      const el = e.target as HTMLElement;
-      const isHover = !!el?.closest?.(INTERACTIVE);
-      setHover((h) => {
-        if (isHover && !h) sfx.hover();
-        return isHover;
-      });
+    const style = document.createElement('style');
+    style.id = 'dexter-cursor';
+    style.textContent = `
+      html, body { cursor: ${DEFAULT} 3 2, auto; }
+      a, button, [role="button"], .chip, .card.hover, label, select, summary, .slide-hit, input[type="range"], input[type="color"], input[type="checkbox"] { cursor: ${POINTER} 3 2, pointer !important; }
+      input:not([type="range"]):not([type="color"]):not([type="checkbox"]), textarea, [contenteditable="true"] { cursor: text !important; }
+      button:disabled { cursor: ${DEFAULT} 3 2, not-allowed !important; }
+    `;
+    document.head.appendChild(style);
+    let last: Element | null = null;
+    const over = (e: PointerEvent) => {
+      const el = (e.target as HTMLElement)?.closest?.('a, button, [role="button"], .chip');
+      if (el && el !== last) sfx.hover();
+      last = el;
     };
-    const loop = () => {
-      rx += (mx - rx) * 0.18;
-      ry += (my - ry) * 0.18;
-      if (ring.current) ring.current.style.transform = `translate(${rx}px, ${ry}px)`;
-      raf = requestAnimationFrame(loop);
-    };
-    const dn = () => setDown(true);
-    const up = () => setDown(false);
-    const leave = () => setVisible(false);
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerdown', dn);
-    window.addEventListener('pointerup', up);
-    document.addEventListener('mouseleave', leave);
-    raf = requestAnimationFrame(loop);
+    window.addEventListener('pointerover', over);
     return () => {
-      document.body.classList.remove('custom-cursor');
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerdown', dn);
-      window.removeEventListener('pointerup', up);
-      document.removeEventListener('mouseleave', leave);
-      cancelAnimationFrame(raf);
+      style.remove();
+      window.removeEventListener('pointerover', over);
     };
   }, []);
-
-  return (
-    <>
-      <div ref={dot} className="cursor-dot" style={{ opacity: visible ? 1 : 0 }} />
-      <div ref={ring} className={`cursor-ring ${hover ? 'hover' : ''} ${down ? 'down' : ''}`} style={{ opacity: visible ? 1 : 0 }}>
-        <svg className="cursor-blade" viewBox="0 0 24 24" fill="none">
-          <path d="M3 21 L14 10 L19 3 L21 5 L14 10" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M3 21 L7 17" stroke="var(--blood-bright)" strokeWidth="2.2" strokeLinecap="round" />
-        </svg>
-      </div>
-    </>
-  );
+  return null;
 }

@@ -21,6 +21,10 @@ The admin account is `omergilboapc@gmail.com` (set in `src/firebase.ts` and `fir
 - **Drafts** — save a draft, preview it as admin, then publish.
 - All built-in content lives in `src/data/`. Firestore documents override it by id, so the site works before anything is seeded.
 
+## 3D characters
+
+The Kill Room uses a rigged mannequin (`public/models/xbot.glb`, the Mixamo “X Bot” shipped with the three.js examples). Any Mixamo-rigged `.glb` uploaded in **Admin → Site settings → 3D Models** gets the same pose presets automatically; other rigs fall back to raw bone posing.
+
 ## Development
 
 ```bash

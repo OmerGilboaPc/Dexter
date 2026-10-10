@@ -15,7 +15,7 @@ function AuthShell({ title, subtitle, children }: { title: string; subtitle: str
   return (
     <div style={{ minHeight: '100vh', position: 'relative', display: 'grid', gridTemplateColumns: '1.15fr 1fr', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0 }}>
-        <Visual src={bg} seed="auth-bg" accent="#c1121f" mode="none" style={{ width: '100%', height: '100%' }} />
+        <Visual src={bg} seed="auth-bg" accent="#d90f1e" mode="none" style={{ width: '100%', height: '100%' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(5,5,7,.55) 0%, rgba(5,5,7,.75) 55%, rgba(5,5,7,.96) 100%), linear-gradient(0deg, rgba(5,5,7,.9), transparent 50%)' }} />
       </div>
       <div style={{ position: 'relative', padding: '60px 6vw', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>

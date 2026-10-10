@@ -9,7 +9,7 @@ export const characters = [
     role: 'Blood Spatter Analyst · Serial Killer',
     series: ['dexter', 'new-blood', 'original-sin', 'resurrection'],
     tagline: 'I’m a very neat monster.',
-    color: '#c1121f',
+    color: '#d90f1e',
     heroImage: '', portrait: '', gallery: [],
     bio:
       'Dexter Morgan was three years old when he sat for days in a shipping container, in a pool of his mother’s blood. The boy who came out was not the same one who went in. Miami cop Harry Morgan adopted him, recognized the hunger as it grew, and did the unthinkable: instead of trying to destroy it, he taught it rules.\n\nBy day, Dexter is a blood spatter analyst for Miami Metro: polite, precise, and friendly in a calculated way, bringing donuts every morning. By night, he hunts murderers who slipped through the cracks of the justice system, follows the Code of Harry to the letter, and keeps a single drop of blood from each of them on a glass slide.\n\nHe calls the urge his Dark Passenger. He fakes nearly every human interaction. But the longer he lives among people, the harder it becomes to tell what is fake.',

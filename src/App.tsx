@@ -13,6 +13,7 @@ import { Cursor } from './components/Cursor';
 import { ThemeInjector, PageTransition, MusicPlayer, Nav, Footer, EditBar } from './components/Chrome';
 import { SearchPalette } from './components/Search';
 import { EasterEggs } from './components/EasterEggs';
+import { AdminWatcher } from './components/AdminWatcher';
 
 import { SignIn, SignUp, Forgot, Verify, Onboarding, Blocked } from './pages/auth/Auth';
 import Home from './pages/Home';
@@ -23,6 +24,7 @@ import { VillainsList, VillainDetail } from './pages/Villains';
 import { Quotes, Timeline, Code, BehindScenes, Trailer } from './pages/Explore';
 import { Profile, Settings, Leaderboard, Gallery } from './pages/Me';
 import CustomPage from './pages/CustomPage';
+import { Books, Daily } from './pages/More';
 import NotFound from './pages/NotFound';
 import Trivia from './pages/games/Trivia';
 import Quiz from './pages/games/Quiz';
@@ -128,6 +130,7 @@ function useTracking() {
     const p = loc.pathname;
     if (p === '/map') track('visit:map');
     if (p === '/kill-room') track('visit:kill-room');
+    if (p === '/books') track('visit:books');
     const m = p.match(/^\/characters\/([^/]+)/);
     if (m) track(`visit:character:${m[1]}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -189,6 +192,8 @@ function MainLayout() {
             <Route path="/code" element={<Code />} />
             <Route path="/behind-the-scenes" element={<BehindScenes />} />
             <Route path="/trailer" element={<Trailer />} />
+            <Route path="/books" element={<Books />} />
+            <Route path="/daily" element={<Daily />} />
             <Route path="/games/trivia" element={<Trivia />} />
             <Route path="/games/quiz" element={<Quiz />} />
             <Route path="/games/blood-spatter" element={<BloodSpatter />} />
@@ -210,6 +215,7 @@ function MainLayout() {
       <MusicPlayer />
       <EditBar />
       <EasterEggs />
+      <AdminWatcher />
       <SearchPalette open={search} onClose={() => setSearch(false)} />
       <AnimatePresence>{showIntro && <Intro key="intro" />}</AnimatePresence>
     </>

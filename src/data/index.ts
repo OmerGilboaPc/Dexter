@@ -6,7 +6,9 @@ import { victims } from './victims';
 import { quotes } from './quotes';
 import { timeline, locations, code, bts } from './world';
 import { trivia, quiz, cases } from './games';
+import { trivia2 } from './trivia2';
 import { achievements, eggs } from './site';
+import { books } from './books';
 
 // Every CMS collection and its built-in defaults. Firestore documents override these by id.
 export const defaults: Record<string, any[]> = {
@@ -20,11 +22,12 @@ export const defaults: Record<string, any[]> = {
   locations,
   code,
   bts,
-  trivia,
+  trivia: [...trivia, ...trivia2],
   quiz,
   cases,
   achievements,
   eggs,
+  books,
   pages: [],
   media: [],
 };

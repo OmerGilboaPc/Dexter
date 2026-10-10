@@ -120,7 +120,17 @@ export function CmsProvider({ signedIn, isAdmin, uid, children }: { signedIn: bo
     return out;
   }, [raw, showDrafts]);
 
-  const settings = useMemo(() => deepMerge(defaultSettings, siteDoc || {}) as typeof defaultSettings, [siteDoc]);
+  const settings = useMemo(() => {
+    const m = deepMerge(defaultSettings, siteDoc || {}) as typeof defaultSettings;
+    // New built-in menu links / home sections appear automatically even if the admin saved an older list.
+    const navTo = new Set((m.nav || []).map((n: any) => n.to));
+    const known = new Set(((siteDoc as any)?.navKnown || []) as string[]);
+    m.nav = [...(m.nav || []), ...defaultSettings.nav.filter((n) => !navTo.has(n.to) && !known.has(n.to))];
+    const secIds = new Set((m.home?.sections || []).map((x: any) => x.id));
+    m.home = { ...m.home, sections: [...(m.home?.sections || []), ...defaultSettings.home.sections.filter((x) => !secIds.has(x.id))] };
+    (m as any).navKnown = defaultSettings.nav.map((n) => n.to);
+    return m;
+  }, [siteDoc]);
 
   const col = useCallback((name: string) => merged[name] || [], [merged]);
   const item = useCallback((name: string, id: string) => (merged[name] || []).find((x) => x.id === id), [merged]);

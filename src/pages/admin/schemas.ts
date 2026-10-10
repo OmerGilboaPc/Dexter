@@ -128,7 +128,7 @@ export const COLLECTION_META: Record<string, { label: string; icon: string; titl
         ['login', 'Sign in'], ['page:unique', 'Unique pages visited'], ['visit:character:dexter', 'Visit Dexter'], ['visit:character:brian', 'Visit Brian'], ['visit:map', 'Visit the map'], ['visit:kill-room', 'Enter the Kill Room'],
         ['slide:open', 'Open slides'], ['quote:copy', 'Copy quotes'], ['trivia:done', 'Finish trivia'], ['trivia:perfect', 'Perfect trivia'], ['trivia:dark', 'Dark Passenger 7+'],
         ['quiz:done', 'Finish the quiz'], ['spatter:round', 'Spatter rounds'], ['spatter:expert', 'Spatter 90+'], ['case:solved', 'Cases solved'], ['photo:capture', 'Photos captured'],
-        ['photo:share', 'Photos shared'], ['egg', 'Easter eggs found'], ['rating', 'Ratings given'], ['watched', 'Episodes watched'], ['time:min', 'Minutes on site'],
+        ['photo:share', 'Photos shared'], ['photo:like', 'Photos liked'], ['photo:comment', 'Photo comments'], ['daily:done', 'Daily challenges'], ['daily:streak7', '7-day streak'], ['visit:books', 'Visit books'], ['egg', 'Easter eggs found'], ['rating', 'Ratings given'], ['watched', 'Episodes watched'], ['time:min', 'Minutes on site'],
       ] },
       { key: 'count', label: 'Required count', type: 'number' },
     ],
@@ -140,6 +140,10 @@ export const COLLECTION_META: Record<string, { label: string; icon: string; titl
       { key: 'word', label: 'Word (for "Typing a word")', type: 'text' }, { key: 'style', type: 'select', options: ['doakes', 'monologue', 'newspaper', 'ice', 'donuts', 'blood'] },
       { key: 'title', type: 'text', wide: true }, { key: 'text', type: 'textarea', wide: true }, { key: 'image', type: 'image' }, { key: 'audio', label: 'Sound', type: 'audio' },
     ],
+  },
+  books: {
+    label: 'Books', icon: '📚', idFrom: 'title', title: (x) => x.title, sub: (x) => x.year, image: (x) => x.cover,
+    fields: [{ key: 'title', type: 'text' }, { key: 'year', type: 'text' }, { key: 'cover', type: 'image' }, { key: 'tagline', type: 'text' }, { key: 'synopsis', type: 'textarea', wide: true }, { key: 'note', label: 'Book vs. series note', type: 'textarea', wide: true }],
   },
   media: {
     label: 'Media Library', icon: '🗂️', idFrom: 'name', title: (x) => x.name, sub: (x) => x.type, image: (x) => x.url,
@@ -160,5 +164,5 @@ export const SETTINGS_SECTIONS: { id: string; label: string; icon: string; field
   { id: 'nav', label: 'Navigation', icon: '🧭', fields: [] },
   { id: 'avatars', label: 'Profile Pictures', icon: '🖼️', fields: [] },
   { id: 'models', label: '3D Models', icon: '🧍', fields: [{ key: 'dexter', label: 'Dexter model (.glb)', type: 'model' }, { key: 'brian', label: 'Brian model (.glb)', type: 'model' }] },
-  { id: 'killRoom', label: 'Kill Room', icon: '🔪', fields: [{ key: 'defaultScene', label: 'Default scene', type: 'select', options: [['killroom', 'The Kill Room'], ['boat', 'Slice of Life'], ['truck', 'The Ice Truck']] }, { key: 'victimPhotos', label: 'Victim photos on the plastic (up to 6)', type: 'images', wide: true }] },
+  { id: 'killRoom', label: 'Kill Room', icon: '🔪', fields: [{ key: 'defaultScene', label: 'Default scene', type: 'select', options: [['killroom', 'The Kill Room'], ['boat', 'Slice of Life'], ['truck', 'The Ice Truck'], ['apartment', 'The Apartment'], ['container', 'The Container'], ['cabin', 'Iron Lake Cabin'], ['vault', 'Prater’s Vault']] }, { key: 'victimPhotos', label: 'Victim photos on the plastic (up to 6)', type: 'images', wide: true }] },
 ];
